@@ -1,0 +1,55 @@
+---
+title: "My Observability Playbook for Early-Stage Teams"
+description: "Practical instrumentation steps that help growing teams catch issues before customers do."
+date: "2025-03-18"
+category: "Tech Deep Dives"
+tags:
+  - observability
+  - startups
+  - tooling
+coverImage: "/og-cover.svg"
+heroQuote: "If you can’t measure the gremlins, you can’t tame them."
+---
+
+Shipping quickly doesn’t have to mean flying blind. Over the last year I helped two early-stage teams evolve from log dumping to actionable observability. Here’s the exact playbook we followed.
+
+## Level 0 → Level 1: Make logs useful
+
+Most teams start with plain text logs scattered across services. We introduced **structured JSON logs** with a common schema:
+
+```json
+{
+  "service": "billing-api",
+  "component": "invoice-generator",
+  "correlationId": "req_4ab3",
+  "latencyMs": 183,
+  "tags": ["invoice", "retry"],
+  "severity": "warn"
+}
+```
+
+This alone enabled grouped queries, correlation IDs, and faster incident drills.
+
+## Level 1 → Level 2: Instrument the edges
+
+We focused on three golden signals: **latency, error rate, saturation**.
+
+- Wrapped every external dependency with a circuit breaker and emitted standardized metrics.
+- Streamed metrics to Prometheus + Grafana with dashboards tailored for on-call.
+- Added automated alerts when error budgets crossed 20% usage.
+
+## Level 2 → Level 3: Close the feedback loop
+
+Observability should serve humans. We embedded insights directly into our delivery workflow:
+
+- Pull request template asked for expected telemetry changes.
+- Incident retrospectives included a section on signal improvements.
+- Product managers got weekly “health snapshots” in Notion.
+
+## Tooling that stayed simple
+
+- **OpenTelemetry** for instrumentation.
+- **Tempo + Loki** for tracing/logs without breaking the bank.
+- **Homegrown notebooks** for experimenting with queries—no vendor lock-in.
+
+Want more? Type `blog` in the terminal or [join the newsletter](/community) for deeper dives.

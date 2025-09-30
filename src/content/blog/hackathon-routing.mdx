@@ -1,0 +1,47 @@
+---
+title: "Shipping a Routing Engine During a Hackathon"
+description: "How our NASA Space Apps team built a dynamic routing engine in 36 hours without losing our minds."
+date: "2025-05-02"
+category: "Hackathon Stories"
+tags:
+  - hackathons
+  - teamwork
+  - product
+coverImage: "/og-cover.svg"
+heroQuote: "Constraints are the best co-founders."
+---
+
+The NASA Space Apps Challenge pairs absurdly ambitious briefs with impossibly short timelines. Our team picked a problem statement that asked for real-time rerouting of humanitarian aid convoys—complete with crowd-sourced signals and satellite imagery. Easy, right?
+
+## The preflight checklist
+
+We scoped ruthlessly:
+
+- **Single core workflow.** One operator enters convoy details, the system generates a prioritized route.
+- **Data sources.** Satellite tiles for terrain + community reports to mark unsafe regions.
+- **Success metric.** Could we outrun the baseline route by at least 15%?
+
+## Architecture in 12 sticky notes
+
+```text
+Client (Next.js) ➜ API (FastAPI) ➜ Worker (Go) ➜ Redis Streams ➜ Mapbox Tiles
+```
+
+- **Next.js dashboard** handled data entry and visual overlays.
+- **FastAPI** orchestrated inputs, validated constraints, and dispatched work to the Go worker.
+- **Go worker** ran the heuristic search (A* with penalties for risky edges).
+- **Redis Streams** glued everything together with pub/sub semantics.
+
+## Shipping under pressure
+
+Three lessons made the sprint feel less like chaos and more like choreography:
+
+1. **Sketch the unhappy path first.** What happens when telemetry is stale? We added safeguards before writing feature code.
+2. **Choose boring tech.** We re-used libraries we’d already shipped to production (FastAPI, Go, Redis). Zero new dependencies meant zero surprises.
+3. **Narrate the journey.** Every teammate wrote mini-log entries ("12:30 UTC — reroute algorithm prefers scenic detour. Investigating.") which fed into our final presentation.
+
+## Did it work?
+
+We beat the baseline ETA by **22%**, surfaced high-risk zones visually, and impressed the judges enough to earn a global nomination. More importantly, we built a shared rhythm for tackling complex problems quickly.
+
+If you ever want to jam on hackathon strategy—or need a partner for your next sprint—drop a line. I promise to bring the sticky notes.
