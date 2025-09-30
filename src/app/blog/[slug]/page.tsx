@@ -69,7 +69,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
           </div>
           {post.heroQuote && (
             <blockquote className="mt-6 rounded-3xl border border-slate-700 bg-slate-900 p-6 text-lg italic text-slate-300 shadow-lg">
-              "{post.heroQuote}"
+              &ldquo;{post.heroQuote}&rdquo;
             </blockquote>
           )}
         </div>

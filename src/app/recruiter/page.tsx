@@ -29,7 +29,7 @@ export default function RecruiterPage() {
               Precision-engineered backends, meticulous execution, empathetic leadership.
             </h1>
             <p className="max-w-2xl text-lg text-white/80">
-              I'm Devansh Dubey, a Software Engineer at Docxster. I design distributed systems that stay
+              I&apos;m Devansh Dubey, a Software Engineer at Docxster. I design distributed systems that stay
               resilient under pressure, mentor developers to ship faster, and bring hackathon energy into every product
               cycle.
             </p>
@@ -207,7 +207,7 @@ export default function RecruiterPage() {
             {testimonials.map((testimonial) => (
               <figure key={testimonial.name} className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">
                 <Award className="h-6 w-6 text-blue-200" />
-                <blockquote className="mt-4 text-sm text-white/80">"{testimonial.quote}"</blockquote>
+                <blockquote className="mt-4 text-sm text-white/80">&ldquo;{testimonial.quote}&rdquo;</blockquote>
                 <figcaption className="mt-4 text-sm font-semibold">
                   {testimonial.name}
                   <span className="block text-xs font-normal text-white/60">{testimonial.title}</span>
@@ -226,7 +226,7 @@ export default function RecruiterPage() {
               <h2 className="text-3xl font-semibold">Beyond the 9 → 5</h2>
             </div>
             <p className="max-w-xl text-sm text-white/70">
-              Empowering the developer community is a core value. Here's how I give back.
+              Empowering the developer community is a core value. Here&apos;s how I give back.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
@@ -243,10 +243,10 @@ export default function RecruiterPage() {
 
       <section className="bg-gradient-to-br from-slate-900 to-slate-800 text-white">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 py-16 text-center">
-          <h2 className="text-3xl font-semibold">Let's explore what we can build together</h2>
+          <h2 className="text-3xl font-semibold">Let&apos;s explore what we can build together</h2>
           <p className="max-w-2xl text-sm text-white/70">
             Whether you need someone to take ownership of complex systems, launch a new product from scratch, or coach a
-            team through high-stakes launches, I'd love to chat.
+            team through high-stakes launches, I&apos;d love to chat.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <a
