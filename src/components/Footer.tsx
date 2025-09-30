@@ -7,7 +7,7 @@ export default function Footer() {
         </p>
         <div className="flex flex-wrap items-center justify-center gap-4 text-slate-300">
           <a
-            href="mailto:hello@devanshdubey.com"
+            href="mailto:devanshdubey0012@gmail.com"
             className="transition hover:text-white"
           >
             Email

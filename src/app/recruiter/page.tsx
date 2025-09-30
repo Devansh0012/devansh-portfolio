@@ -35,7 +35,7 @@ export default function RecruiterPage() {
             </p>
             <div className="flex flex-wrap gap-3">
                 <a
-                href="https://drive.google.com/file/d/1mARtyWBZIIXVIuGLG9FT9tzj0MtBNZ-H/view?usp=sharing"
+                href="https://drive.google.com/file/d/1aVRmVG6UTHH9mZdqqRURRYZ4F0LLBrrW/view?usp=sharing"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow transition hover:-translate-y-0.5 hover:shadow-lg"
@@ -250,7 +250,7 @@ export default function RecruiterPage() {
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <a
-              href="mailto:hello@devanshdubey.com"
+              href="mailto:devanshdubey0012@gmail.com"
               className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow transition hover:-translate-y-0.5 hover:bg-slate-100"
             >
               Start a conversation

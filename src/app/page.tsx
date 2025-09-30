@@ -88,7 +88,7 @@ export default function HomePage() {
         <Users className="h-4 w-4" />
           </Link>
           <a
-        href="mailto:hello@devanshdubey.com"
+        href="mailto:devanshdubey0012@gmail.com"
         className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:border-white hover:bg-white/10"
           >
         Get in touch

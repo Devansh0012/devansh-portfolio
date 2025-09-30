@@ -44,7 +44,7 @@ export default function Navbar() {
               );
             })}
             <a
-              href="https://drive.google.com/file/d/1mARtyWBZIIXVIuGLG9FT9tzj0MtBNZ-H/view?usp=sharing"
+              href="https://drive.google.com/file/d/1aVRmVG6UTHH9mZdqqRURRYZ4F0LLBrrW/view?usp=sharing"
               className="inline-flex items-center rounded-full border border-slate-700 bg-blue-500 px-3.5 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-400"
               download
             >
