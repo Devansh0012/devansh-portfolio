@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://devanshdubey.com
+
+# Sitemaps
+Sitemap: https://devanshdubey.com/sitemap.xml
