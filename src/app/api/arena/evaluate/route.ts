@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import vm from "node:vm";
+import { spawn } from "node:child_process";
+import { writeFileSync, unlinkSync, mkdtempSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { z } from "zod";
 import { getChallengeById } from "@/lib/challenges";
 import { addLeaderboardEntry, getLeaderboard } from "@/lib/leaderboard";
@@ -8,6 +12,7 @@ const requestSchema = z.object({
   challengeId: z.string(),
   code: z.string().min(20).max(8000),
   handle: z.string().min(2).max(40),
+  language: z.enum(["typescript", "javascript", "python", "java", "cpp", "c", "go", "rust", "php", "ruby"]).default("typescript"),
 });
 
 type TestResult = {
@@ -18,7 +23,281 @@ type TestResult = {
   error?: string;
 };
 
-// Function to strip TypeScript types and convert to JavaScript
+type SupportedLanguage = "typescript" | "javascript" | "python" | "java" | "cpp" | "c" | "go" | "rust" | "php" | "ruby";
+
+// Language execution configurations
+const LANGUAGE_CONFIGS: Record<SupportedLanguage, {
+  extension: string;
+  executeCommand: (filePath: string, tempDir: string) => string[];
+  functionWrapper: (code: string, functionName: string, testInputs: unknown[]) => string;
+  timeout: number;
+}> = {
+  typescript: {
+    extension: '.ts',
+    executeCommand: (filePath: string) => ['npx', 'tsx', filePath],
+    functionWrapper: (code: string, functionName: string, testInputs: unknown[]) => {
+      const strippedCode = stripTypeScript(code).replace(/export\s+/, '');
+      return `
+${strippedCode}
+
+// Test execution
+const inputs = ${JSON.stringify(testInputs)};
+const result = ${functionName}(...inputs);
+console.log(JSON.stringify(result));
+      `;
+    },
+    timeout: 10000
+  },
+  javascript: {
+    extension: '.js',
+    executeCommand: (filePath: string) => ['node', filePath],
+    functionWrapper: (code: string, functionName: string, testInputs: unknown[]) => {
+      const cleanCode = code.replace(/export\s+/, '');
+      return `
+${cleanCode}
+
+// Test execution
+const inputs = ${JSON.stringify(testInputs)};
+const result = ${functionName}(...inputs);
+console.log(JSON.stringify(result));
+      `;
+    },
+    timeout: 10000
+  },
+  python: {
+    extension: '.py',
+    executeCommand: (filePath: string) => ['python3', filePath],
+    functionWrapper: (code: string, functionName: string, testInputs: unknown[]) => `
+import json
+
+${code}
+
+# Test execution
+inputs = ${JSON.stringify(testInputs)}
+result = ${functionName}(*inputs)
+print(json.dumps(result))
+    `,
+    timeout: 10000
+  },
+  java: {
+    extension: '.java',
+    executeCommand: (filePath: string, tempDir: string) => {
+      // Java requires compilation first
+      const className = 'Solution';
+      return ['sh', '-c', `cd ${tempDir} && javac ${className}.java && java ${className}`];
+    },
+    functionWrapper: (code: string, functionName: string, testInputs: unknown[]) => `
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+public class Solution {
+    ${code.replace(/public\s+class\s+\w+\s*{/, '').replace(/}$/, '')}
+    
+    public static void main(String[] args) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        Object[] inputs = ${JSON.stringify(testInputs)};
+        // Note: This is simplified - real implementation would need proper type conversion
+        Object result = ${functionName}(inputs);
+        System.out.println(mapper.writeValueAsString(result));
+    }
+}
+    `,
+    timeout: 15000
+  },
+  cpp: {
+    extension: '.cpp',
+    executeCommand: (filePath: string, tempDir: string) => [
+      'sh', '-c', 
+      `cd ${tempDir} && g++ -o solution ${filePath} && ./solution`
+    ],
+    functionWrapper: (code: string, functionName: string, testInputs: unknown[]) => `
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+${code}
+
+int main() {
+    // Note: This is simplified - real implementation would need proper JSON parsing
+    auto inputs = vector<int>{${testInputs.map(String).join(', ')}};
+    auto result = ${functionName}(inputs);
+    cout << result << endl;
+    return 0;
+}
+    `,
+    timeout: 15000
+  },
+  c: {
+    extension: '.c',
+    executeCommand: (filePath: string, tempDir: string) => [
+      'sh', '-c', 
+      `cd ${tempDir} && gcc -o solution ${filePath} && ./solution`
+    ],
+    functionWrapper: () => `
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    printf("C execution not fully implemented yet\\n");
+    return 0;
+}
+    `,
+    timeout: 15000
+  },
+  go: {
+    extension: '.go',
+    executeCommand: (filePath: string) => ['go', 'run', filePath],
+    functionWrapper: (code: string, functionName: string, testInputs: unknown[]) => `
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+)
+
+${code}
+
+func main() {
+    inputs := []interface{}{${testInputs.map(i => JSON.stringify(i)).join(', ')}}
+    result := ${functionName}(inputs...)
+    jsonResult, _ := json.Marshal(result)
+    fmt.Println(string(jsonResult))
+}
+    `,
+    timeout: 10000
+  },
+  rust: {
+    extension: '.rs',
+    executeCommand: (filePath: string) => ['rustc', '--out-dir', '/tmp', filePath, '&&', '/tmp/solution'],
+    functionWrapper: () => `
+fn main() {
+    println!("Rust execution not fully implemented yet");
+}
+    `,
+    timeout: 15000
+  },
+  php: {
+    extension: '.php',
+    executeCommand: (filePath: string) => ['php', filePath],
+    functionWrapper: (code: string, functionName: string, testInputs: unknown[]) => `
+<?php
+${code}
+
+$inputs = ${JSON.stringify(testInputs)};
+$result = ${functionName}(...$inputs);
+echo json_encode($result);
+?>
+    `,
+    timeout: 10000
+  },
+  ruby: {
+    extension: '.rb',
+    executeCommand: (filePath: string) => ['ruby', filePath],
+    functionWrapper: (code: string, functionName: string, testInputs: unknown[]) => `
+require 'json'
+
+${code}
+
+inputs = ${JSON.stringify(testInputs)}
+result = ${functionName}(*inputs)
+puts result.to_json
+    `,
+    timeout: 10000
+  }
+};
+
+// Function to execute code in different languages
+async function executeCodeInLanguage(
+  code: string, 
+  language: SupportedLanguage, 
+  functionName: string, 
+  testInputs: unknown[]
+): Promise<{ result: unknown; error?: string }> {
+  const config = LANGUAGE_CONFIGS[language];
+  
+  // For JavaScript/TypeScript, use VM for security
+  if (language === 'javascript' || language === 'typescript') {
+    try {
+      const wrappedCode = config.functionWrapper(code, functionName, testInputs);
+      const sandbox = { 
+        console: { log: () => undefined },
+        JSON,
+        Math,
+        String,
+        Number,
+        Array,
+        Object
+      };
+      const context = vm.createContext(sandbox);
+      
+      const script = new vm.Script(`
+        ${wrappedCode.replace('console.log(JSON.stringify(result));', 'globalThis.__result = result;')}
+      `);
+      
+      script.runInContext(context, { timeout: 5000 });
+      return { result: (context as { __result?: unknown }).__result };
+    } catch (error) {
+      return { result: null, error: String(error) };
+    }
+  }
+  
+  // For other languages, use child processes (simplified implementation)
+  return new Promise((resolve) => {
+    const tempDir = mkdtempSync(join(tmpdir(), 'arena-'));
+    const fileName = `solution${config.extension}`;
+    const filePath = join(tempDir, fileName);
+    
+    try {
+      const wrappedCode = config.functionWrapper(code, functionName, testInputs);
+      writeFileSync(filePath, wrappedCode);
+      
+      const [command, ...args] = config.executeCommand(filePath, tempDir);
+      const child = spawn(command, args, {
+        cwd: tempDir,
+        timeout: config.timeout
+      });
+      
+      let stdout = '';
+      let stderr = '';
+      
+      child.stdout?.on('data', (data) => {
+        stdout += data.toString();
+      });
+      
+      child.stderr?.on('data', (data) => {
+        stderr += data.toString();
+      });
+      
+      child.on('close', (code) => {
+        try {
+          unlinkSync(filePath);
+        } catch {
+          // Ignore cleanup errors
+        }
+        
+        if (code !== 0) {
+          resolve({ result: null, error: stderr || 'Execution failed' });
+          return;
+        }
+        
+        try {
+          const result = JSON.parse(stdout.trim());
+          resolve({ result });
+        } catch {
+          resolve({ result: null, error: 'Invalid output format' });
+        }
+      });
+      
+      child.on('error', (error) => {
+        resolve({ result: null, error: String(error) });
+      });
+      
+    } catch (error) {
+      resolve({ result: null, error: String(error) });
+    }
+  });
+}
 function stripTypeScript(code: string): string {
   let jsCode = code;
   
@@ -63,80 +342,55 @@ export async function POST(request: Request) {
     );
   }
 
-  const { challengeId, code, handle } = parseResult.data;
+  const { challengeId, code, handle, language } = parseResult.data;
   const challenge = getChallengeById(challengeId);
   if (!challenge) {
     return NextResponse.json({ error: "Challenge not found" }, { status: 404 });
   }
 
+  // Check if language is supported for execution
+  if (!LANGUAGE_CONFIGS[language]) {
+    return NextResponse.json({ 
+      error: `Language ${language} is not supported for execution yet`,
+      hint: "Currently supported: JavaScript, TypeScript, Python, PHP, Ruby"
+    }, { status: 400 });
+  }
+
   const tests = challenge.tests;
-  const sandbox = { 
-    console: { log: () => undefined },
-    exports: {},
-    module: { exports: {} }
-  };
-  const context = vm.createContext(sandbox, { codeGeneration: { strings: true, wasm: false } });
   const results: TestResult[] = [];
   const start = Date.now();
-  let transformedCode = "";
-
-  try {
-    // First strip TypeScript types to convert to JavaScript
-    transformedCode = stripTypeScript(code);
-    
-    // Handle "export function functionName" pattern
-    const exportFunctionMatch = transformedCode.match(/export\s+function\s+(\w+)/);
-    if (exportFunctionMatch) {
-      const funcName = exportFunctionMatch[1];
-      transformedCode = transformedCode.replace(/export\s+function/, 'function');
-      transformedCode += `\nglobalThis.__solution = ${funcName};`;
-    } else {
-      // Handle "export { functionName }" or "export default" patterns
-      const exportMatch = transformedCode.match(/export\s*{\s*(\w+)\s*}/);
-      const exportDefaultMatch = transformedCode.match(/export\s+default\s+(\w+)/);
-      
-      if (exportMatch) {
-        const funcName = exportMatch[1];
-        transformedCode = transformedCode.replace(/export\s*{\s*\w+\s*}/, '');
-        transformedCode += `\nglobalThis.__solution = ${funcName};`;
-      } else if (exportDefaultMatch) {
-        const funcName = exportDefaultMatch[1];
-        transformedCode = transformedCode.replace(/export\s+default\s+\w+/, '');
-        transformedCode += `\nglobalThis.__solution = ${funcName};`;
-      } else {
-        // Fallback: try to find the function and make it available
-        transformedCode += `\nglobalThis.__solution = ${challenge.functionName};`;
-      }
-    }
-
-    const script = new vm.Script(transformedCode);
-    script.runInContext(context, { timeout: 1500 });
-  } catch (error) {
-    return NextResponse.json({ 
-      error: "Code execution failed", 
-      details: String(error),
-      hint: "Make sure your code exports the required function and has valid syntax.",
-      transformedCode: transformedCode // Add this for debugging
-    }, { status: 400 });
-  }
-
-  const solution = (context as typeof context & { __solution?: unknown }).__solution;
-  if (typeof solution !== "function") {
-    return NextResponse.json({ 
-      error: `Expected exported function '${challenge.functionName}' but found ${typeof solution}`,
-      hint: `Make sure to export a function named '${challenge.functionName}' from your code.`
-    }, { status: 400 });
-  }
 
   let passedCount = 0;
   for (const test of tests) {
     try {
-      const output = (solution as (...args: unknown[]) => unknown)(...test.input);
-      const passed = deepEqual(output, test.expected);
+      const { result, error } = await executeCodeInLanguage(
+        code, 
+        language, 
+        challenge.functionName, 
+        test.input
+      );
+      
+      if (error) {
+        results.push({
+          name: test.name,
+          passed: false,
+          received: null,
+          expected: test.expected,
+          error: error,
+        });
+        continue;
+      }
+      
+      const passed = deepEqual(result, test.expected);
       if (passed) {
         passedCount += 1;
       }
-      results.push({ name: test.name, passed, received: output, expected: test.expected });
+      results.push({ 
+        name: test.name, 
+        passed, 
+        received: result, 
+        expected: test.expected 
+      });
     } catch (error) {
       results.push({
         name: test.name,

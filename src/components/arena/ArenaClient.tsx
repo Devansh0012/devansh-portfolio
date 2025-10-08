@@ -94,6 +94,7 @@ export default function ArenaClient({ challenges }: Props) {
             challengeId: challenge.id,
             code,
             handle: handle.trim(),
+            language,
           }),
         });
         const payload = (await response.json()) as EvaluateResponse;
@@ -123,7 +124,7 @@ export default function ArenaClient({ challenges }: Props) {
         setLoading(false);
       }
     },
-    [challenge, code, handle],
+    [challenge, code, handle, language],
   );
 
   const handleRunCode = useCallback(() => {
