@@ -20,10 +20,10 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/80 backdrop-blur">
+    <header className="glass sticky top-0 z-50 shadow-lg shadow-slate-900/20">
       <nav className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex h-16 items-center justify-between">
-          <Link href="/" className="text-lg font-semibold tracking-tight text-slate-100">
+          <Link href="/" className="text-lg font-semibold tracking-tight text-slate-100 hover:text-blue-400 transition-colors">
             Devansh Dubey
           </Link>
 
@@ -35,8 +35,10 @@ export default function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`text-sm font-medium text-slate-300 transition-colors hover:text-white ${
-                    isActive ? "text-blue-400" : "text-slate-300"
+                  className={`text-sm font-medium transition-colors ${
+                    isActive 
+                      ? "text-blue-400" 
+                      : "text-slate-300 hover:text-slate-100"
                   }`}
                 >
                   {item.label}
@@ -45,8 +47,9 @@ export default function Navbar() {
             })}
             <a
               href="https://drive.google.com/file/d/1aVRmVG6UTHH9mZdqqRURRYZ4F0LLBrrW/view?usp=sharing"
-              className="inline-flex items-center rounded-full border border-slate-700 bg-blue-500 px-3.5 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-400"
-              download
+              className="glass-card glass-hover inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-slate-100 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/25"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Download Resume
             </a>
@@ -54,7 +57,7 @@ export default function Navbar() {
 
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-md p-2 text-slate-200 transition hover:bg-slate-800 md:hidden"
+            className="glass-card glass-hover inline-flex items-center justify-center rounded-md p-2 text-slate-200 transition-all md:hidden hover:text-slate-100"
             onClick={() => setMobileOpen((prev) => !prev)}
             aria-label="Toggle navigation menu"
           >
@@ -64,7 +67,7 @@ export default function Navbar() {
 
         {mobileOpen && (
           <div className="pb-4 md:hidden">
-            <div className="flex flex-col gap-3 rounded-lg border border-slate-800 bg-slate-900 p-4 shadow">
+            <div className="glass-card flex flex-col gap-3 rounded-lg p-4 shadow-lg mt-2">
               {links.map((item) => {
                 const isActive =
                   pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -74,7 +77,7 @@ export default function Navbar() {
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
                     className={`text-sm font-medium transition-colors ${
-                      isActive ? "text-blue-400" : "text-slate-200"
+                      isActive ? "text-blue-400" : "text-slate-200 hover:text-slate-100"
                     }`}
                   >
                     {item.label}
@@ -84,7 +87,7 @@ export default function Navbar() {
               <a
                 href="/resume.pdf"
                 onClick={() => setMobileOpen(false)}
-                className="inline-flex items-center justify-center rounded-full border border-slate-700 bg-blue-500 px-3.5 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-400"
+                className="glass-hover inline-flex items-center justify-center rounded-full border border-slate-600/50 px-4 py-2 text-sm font-semibold text-slate-100 shadow-sm transition-all hover:-translate-y-0.5"
                 download
               >
                 Download Resume
