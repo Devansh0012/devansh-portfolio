@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { notFound } from "next/navigation";
 import { getAllPosts } from "@/lib/blog";
+import SubscriptionForm from "@/components/SubscriptionForm";
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -141,25 +142,14 @@ export default async function BlogIndexPage({
           <p className="mt-3 text-sm text-gray-400">
             Monthly digest with engineering deep dives, incident retrospectives, and community events. Zero spam, ever.
           </p>
-          <form className="mt-6 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-            <label className="sr-only" htmlFor="blog-email">
-              Email address
-            </label>
-            <input
-              id="blog-email"
-              type="email"
+          <div className="mt-6 max-w-md mx-auto">
+            <SubscriptionForm 
+              type="blog" 
               placeholder="you@amazingteam.com"
-              required
-              className="w-full rounded-xl border border-gray-800 bg-gray-900 px-4 py-3 text-sm text-gray-100 shadow-sm placeholder:text-gray-500 focus:border-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-800"
+              buttonText="Subscribe"
+              className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
             />
-            <button
-              type="submit"
-              className="rounded-xl bg-gray-100 px-4 py-3 text-sm font-semibold text-gray-900 shadow transition hover:bg-gray-300"
-            >
-              Subscribe
-            </button>
-          </form>
-          <p className="mt-2 text-[0.7rem] text-gray-600">You can unsubscribe at any time with one click.</p>
+          </div>
         </div>
       </section>
     </div>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import SubscriptionForm from "@/components/SubscriptionForm";
 
 export const metadata: Metadata = {
   title: "Community Mode",
@@ -30,27 +31,13 @@ export default function CommunityPage() {
           </div>
           <div className="rounded-3xl border border-slate-800/60 bg-slate-900/70 p-6 text-left">
             <h2 className="text-lg font-semibold text-slate-100">Join the waitlist</h2>
-            <form className="mt-3 space-y-3">
-              <label className="sr-only" htmlFor="community-email">
-                Email address
-              </label>
-              <input
-                id="community-email"
-                type="email"
-                required
+            <div className="mt-3">
+              <SubscriptionForm 
+                type="community" 
                 placeholder="you@amazingteam.com"
-                className="w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-200 shadow-sm focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-600"
+                buttonText="Notify me"
               />
-              <button
-                type="submit"
-                className="w-full rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:bg-white"
-              >
-                Notify me
-              </button>
-              <p className="text-[0.7rem] text-slate-500">
-                No spam—just the good stuff. You can opt out anytime.
-              </p>
-            </form>
+            </div>
           </div>
         </div>
         <div className="mt-10 flex flex-wrap justify-center gap-3 text-sm text-slate-400">
