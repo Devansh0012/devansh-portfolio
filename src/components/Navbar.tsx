@@ -23,8 +23,14 @@ export default function Navbar() {
     <header className="glass sticky top-0 z-50 shadow-lg shadow-slate-900/20">
       <nav className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex h-16 items-center justify-between">
-          <Link href="/" className="text-lg font-semibold tracking-tight text-slate-100 hover:text-blue-400 transition-colors">
-            Devansh Dubey
+          <Link href="/" className="glass-card glass-hover flex items-center justify-center rounded-lg p-2 text-slate-100 hover:text-blue-400 transition-all duration-300 hover:-translate-y-0.5">
+            <div className="relative">
+              <div className="text-xl font-bold tracking-tighter">
+                <span className="text-blue-400">D</span>
+                <span className="text-slate-100">D</span>
+              </div>
+              <div className="absolute -bottom-1 left-0 h-0.5 w-full bg-gradient-to-r from-blue-400 to-transparent"></div>
+            </div>
           </Link>
 
           <div className="hidden md:flex items-center gap-6">
