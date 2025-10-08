@@ -18,6 +18,41 @@ type TestResult = {
   error?: string;
 };
 
+// Function to strip TypeScript types and convert to JavaScript
+function stripTypeScript(code: string): string {
+  let jsCode = code;
+  
+  // Simple approach: just remove type annotations from function parameters
+  // Match function declarations with typed parameters
+  jsCode = jsCode.replace(
+    /function\s+(\w+)\s*\(([^)]*)\)/g,
+    (match: string, funcName: string, params: string) => {
+      // Clean up parameters by removing type annotations
+      const cleanParams = params
+        .split(',')
+        .map((param: string) => param.trim().split(':')[0].trim())
+        .filter((param: string) => param.length > 0)
+        .join(', ');
+      return `function ${funcName}(${cleanParams})`;
+    }
+  );
+  
+  // Also handle arrow functions with types (if any)
+  jsCode = jsCode.replace(
+    /\(([^)]*)\)\s*:\s*[^{]+\s*=>/g,
+    (match: string, params: string) => {
+      const cleanParams = params
+        .split(',')
+        .map((param: string) => param.trim().split(':')[0].trim())
+        .filter((param: string) => param.length > 0)
+        .join(', ');
+      return `(${cleanParams}) =>`;
+    }
+  );
+  
+  return jsCode;
+}
+
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parseResult = requestSchema.safeParse(body);
@@ -35,21 +70,62 @@ export async function POST(request: Request) {
   }
 
   const tests = challenge.tests;
-  const sandbox = { console: { log: () => undefined } };
+  const sandbox = { 
+    console: { log: () => undefined },
+    exports: {},
+    module: { exports: {} }
+  };
   const context = vm.createContext(sandbox, { codeGeneration: { strings: true, wasm: false } });
   const results: TestResult[] = [];
   const start = Date.now();
+  let transformedCode = "";
 
   try {
-    const script = new vm.Script(`${code}\n;globalThis.__solution = ${challenge.functionName};`);
+    // First strip TypeScript types to convert to JavaScript
+    transformedCode = stripTypeScript(code);
+    
+    // Handle "export function functionName" pattern
+    const exportFunctionMatch = transformedCode.match(/export\s+function\s+(\w+)/);
+    if (exportFunctionMatch) {
+      const funcName = exportFunctionMatch[1];
+      transformedCode = transformedCode.replace(/export\s+function/, 'function');
+      transformedCode += `\nglobalThis.__solution = ${funcName};`;
+    } else {
+      // Handle "export { functionName }" or "export default" patterns
+      const exportMatch = transformedCode.match(/export\s*{\s*(\w+)\s*}/);
+      const exportDefaultMatch = transformedCode.match(/export\s+default\s+(\w+)/);
+      
+      if (exportMatch) {
+        const funcName = exportMatch[1];
+        transformedCode = transformedCode.replace(/export\s*{\s*\w+\s*}/, '');
+        transformedCode += `\nglobalThis.__solution = ${funcName};`;
+      } else if (exportDefaultMatch) {
+        const funcName = exportDefaultMatch[1];
+        transformedCode = transformedCode.replace(/export\s+default\s+\w+/, '');
+        transformedCode += `\nglobalThis.__solution = ${funcName};`;
+      } else {
+        // Fallback: try to find the function and make it available
+        transformedCode += `\nglobalThis.__solution = ${challenge.functionName};`;
+      }
+    }
+
+    const script = new vm.Script(transformedCode);
     script.runInContext(context, { timeout: 1500 });
   } catch (error) {
-    return NextResponse.json({ error: "Code execution failed", details: String(error) }, { status: 400 });
+    return NextResponse.json({ 
+      error: "Code execution failed", 
+      details: String(error),
+      hint: "Make sure your code exports the required function and has valid syntax.",
+      transformedCode: transformedCode // Add this for debugging
+    }, { status: 400 });
   }
 
   const solution = (context as typeof context & { __solution?: unknown }).__solution;
   if (typeof solution !== "function") {
-    return NextResponse.json({ error: `Expected exported function ${challenge.functionName}` }, { status: 400 });
+    return NextResponse.json({ 
+      error: `Expected exported function '${challenge.functionName}' but found ${typeof solution}`,
+      hint: `Make sure to export a function named '${challenge.functionName}' from your code.`
+    }, { status: 400 });
   }
 
   let passedCount = 0;

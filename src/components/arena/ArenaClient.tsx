@@ -25,6 +25,9 @@ type EvaluateResponse = {
   }>;
   leaderboard: LeaderboardEntry[];
   error?: string;
+  details?: string;
+  hint?: string;
+  transformedCode?: string;
 };
 
 type Props = {
@@ -95,7 +98,18 @@ export default function ArenaClient({ challenges }: Props) {
         });
         const payload = (await response.json()) as EvaluateResponse;
         if (!response.ok || payload.error) {
-          setError(payload.error ?? "Submission failed. Try again.");
+          // Show detailed error information for debugging
+          let errorMessage = payload.error ?? "Submission failed. Try again.";
+          if (payload.details) {
+            errorMessage += `\n\nDetails: ${payload.details}`;
+          }
+          if (payload.hint) {
+            errorMessage += `\n\nHint: ${payload.hint}`;
+          }
+          if (payload.transformedCode) {
+            errorMessage += `\n\nTransformed Code:\n${payload.transformedCode}`;
+          }
+          setError(errorMessage);
           setSummary(null);
           setTestResults(null);
         } else {
@@ -220,7 +234,7 @@ export default function ArenaClient({ challenges }: Props) {
 
           {error && (
             <div className="glass-card rounded-xl border border-red-500/30 bg-red-500/10 p-4">
-              <p className="text-sm text-red-300">{error}</p>
+              <pre className="text-sm text-red-300 whitespace-pre-wrap font-mono">{error}</pre>
             </div>
           )}
 
