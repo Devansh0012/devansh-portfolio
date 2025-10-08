@@ -1,17 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import clsx from "clsx";
 import { Brain, Trophy } from "lucide-react";
+import AdvancedEditor, { type SupportedLanguage } from "./AdvancedEditor";
 import type { ChallengeSummary } from "@/lib/challenges";
 import type { LeaderboardEntry } from "@/lib/leaderboard";
-import type { EditorProps } from "@monaco-editor/react";
-
-const MonacoEditor = dynamic<EditorProps>(() => import("@monaco-editor/react").then((mod) => mod.default), {
-  ssr: false,
-});
 
 type EvaluateResponse = {
   summary: {
@@ -45,6 +40,7 @@ const difficultyColors: Record<ChallengeSummary["difficulty"], string> = {
 export default function ArenaClient({ challenges }: Props) {
   const [selectedId, setSelectedId] = useState<string>(challenges[0]?.id ?? "");
   const [code, setCode] = useState<string>(challenges[0]?.starterCode ?? "");
+  const [language, setLanguage] = useState<SupportedLanguage>("typescript");
   const [handle, setHandle] = useState<string>("");
   const [summary, setSummary] = useState<EvaluateResponse["summary"] | null>(null);
   const [testResults, setTestResults] = useState<EvaluateResponse["results"] | null>(null);
@@ -116,15 +112,23 @@ export default function ArenaClient({ challenges }: Props) {
     [challenge, code, handle],
   );
 
+  const handleRunCode = useCallback(() => {
+    // Create a synthetic form event
+    const syntheticEvent = {
+      preventDefault: () => {},
+    } as React.FormEvent<HTMLFormElement>;
+    handleSubmit(syntheticEvent);
+  }, [handleSubmit]);
+
   if (!challenge) {
-    return <p className="text-sm text-slate-600">No challenges available right now. Check back soon!</p>;
+    return <p className="text-sm text-slate-400">No challenges available right now. Check back soon!</p>;
   }
 
   return (
     <div className="grid gap-8 lg:grid-cols-[320px_minmax(0,1fr)]">
       <aside className="space-y-4">
-        <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-700 p-4 shadow-sm">
-          <h2 className="text-sm font-semibold text-white">Challenges</h2>
+        <div className="glass-card rounded-3xl p-4 shadow-sm">
+          <h2 className="text-sm font-semibold text-slate-100">Challenges</h2>
           <div className="mt-3 flex flex-col gap-2">
             {challenges.map((item) => (
               <button
@@ -132,10 +136,10 @@ export default function ArenaClient({ challenges }: Props) {
                 key={item.id}
                 onClick={() => setSelectedId(item.id)}
                 className={clsx(
-                  "rounded-2xl border px-3 py-3 text-left text-sm transition",
+                  "rounded-2xl border px-3 py-3 text-left text-sm transition-all duration-300",
                   item.id === challenge.id
-                    ? "border-slate-900 bg-slate-900 text-white shadow"
-                    : "border-slate-200 bg-slate-300 text-slate-700 hover:border-slate-300",
+                    ? "glass-card border-blue-500/50 bg-blue-500/20 text-slate-100 shadow-lg shadow-blue-500/20"
+                    : "glass-hover border-slate-500/30 text-slate-300 hover:border-slate-400 hover:text-slate-100",
                 )}
               >
                 <div className="flex items-center justify-between">
@@ -144,67 +148,61 @@ export default function ArenaClient({ challenges }: Props) {
                     {item.difficulty}
                   </span>
                 </div>
-                <p className="mt-1 text-xs text-slate-500">{item.description}</p>
+                <p className="mt-1 text-xs text-slate-400">{item.description}</p>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-700 p-4 shadow-sm">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-white">
-            <Trophy className="h-4 w-4" /> Leaderboard
+        <div className="glass-card rounded-3xl p-4 shadow-sm">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-100">
+            <Trophy className="h-4 w-4 text-blue-400" /> Leaderboard
           </div>
           <div className="mt-4 space-y-3">
-            {leaderboard.length === 0 && <p className="text-xs text-white">Be the first to submit a spotless run.</p>}
+            {leaderboard.length === 0 && <p className="text-xs text-slate-400">Be the first to submit a spotless run.</p>}
             {leaderboard.slice(0, 6).map((entry, index) => (
-              <div key={entry.id} className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+              <div key={entry.id} className="glass-hover rounded-2xl border border-slate-500/30 p-3 text-xs transition-all duration-300">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-slate-700">
+                  <span className="font-semibold text-slate-200">
                     #{index + 1} {entry.handle}
                   </span>
-                  <span className="text-slate-500">{entry.score}</span>
+                  <span className="text-blue-400 font-bold">{entry.score}</span>
                 </div>
-                <p className="mt-1 text-slate-500">{entry.challengeTitle}</p>
-                <p className="text-[0.65rem] text-slate-400">
+                <p className="mt-1 text-slate-400">{entry.challengeTitle}</p>
+                <p className="text-[0.65rem] text-slate-500">
                   {entry.testsPassed}/{entry.totalTests} tests · {entry.runtimeMs}ms
                 </p>
               </div>
             ))}
           </div>
-          <Link href="/arena/leaderboard" className="mt-4 inline-block text-xs font-semibold text-white">
+          <Link href="/arena/leaderboard" className="mt-4 inline-block text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors">
             View full leaderboard →
           </Link>
         </div>
       </aside>
 
       <main className="space-y-6">
-        <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-700 p-6 shadow-sm">
-          <p className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white">
+        <div className="glass-card rounded-3xl p-6 shadow-sm">
+          <p className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-blue-300">
             <Brain className="h-4 w-4" /> {challenge.difficulty}
           </p>
-          <h1 className="mt-4 text-2xl font-semibold text-white">{challenge.title}</h1>
-          <p className="mt-2 text-sm text-white">{challenge.prompt}</p>
+          <h1 className="text-glow mt-4 text-2xl font-semibold text-slate-100">{challenge.title}</h1>
+          <p className="mt-2 text-sm text-slate-300">{challenge.prompt}</p>
         </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-3xl border border-slate-200 bg-slate-950">
-            <MonacoEditor
-              height="420px"
-              theme="vs-dark"
-              language="typescript"
-              value={code}
-              onChange={(value: string | undefined) => setCode(value ?? "")}
-              options={{
-                fontSize: 14,
-                minimap: { enabled: false },
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-              }}
-            />
-          </div>
+          <AdvancedEditor
+            value={code}
+            onChange={setCode}
+            language={language}
+            onLanguageChange={setLanguage}
+            onRun={handleRunCode}
+            isLoading={loading}
+            placeholder="Start coding here..."
+          />
 
-          <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-700 p-4 shadow-sm">
-            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-white" htmlFor="arena-handle">
+          <div className="glass-card rounded-3xl p-4 shadow-sm">
+            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-300" htmlFor="arena-handle">
               Display name
             </label>
             <input
@@ -213,33 +211,37 @@ export default function ArenaClient({ challenges }: Props) {
               value={handle}
               onChange={(event) => setHandle(event.target.value)}
               placeholder="hackathon-hero"
-              className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              className="mt-2 w-full rounded-xl border border-slate-500/30 bg-slate-700/50 px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/20"
             />
-            <p className="mt-2 text-[0.7rem] text-white">
+            <p className="mt-2 text-[0.7rem] text-slate-400">
               Your handle appears on the leaderboard when you beat all tests.
             </p>
           </div>
 
-          {error && <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">{error}</p>}
+          {error && (
+            <div className="glass-card rounded-xl border border-red-500/30 bg-red-500/10 p-4">
+              <p className="text-sm text-red-300">{error}</p>
+            </div>
+          )}
 
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center gap-2 rounded-full bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-900 shadow transition hover:-translate-y-0.5 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="glass-card glass-hover inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-slate-100 shadow transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/25 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Evaluating…" : "Run tests"}
             </button>
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-slate-400">
               Tests execute inside a sandboxed VM with a 1.5s time budget.
             </span>
           </div>
         </form>
 
         {summary && (
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-900">Results</h2>
-            <p className="mt-1 text-sm text-slate-600">
+          <div className="glass-card rounded-3xl p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-slate-100">Results</h2>
+            <p className="mt-1 text-sm text-slate-300">
               {summary.testsPassed}/{summary.totalTests} tests · Score {summary.score} · Runtime {summary.runtimeMs}ms
             </p>
             <div className="mt-4 space-y-3">
@@ -249,8 +251,8 @@ export default function ArenaClient({ challenges }: Props) {
                   className={clsx(
                     "rounded-2xl border px-4 py-3 text-sm",
                     result.passed
-                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                      : "border-rose-200 bg-rose-50 text-rose-700",
+                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                      : "border-red-500/30 bg-red-500/10 text-red-300",
                   )}
                 >
                   <p className="font-semibold">{result.name}</p>
