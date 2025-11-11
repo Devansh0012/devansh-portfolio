@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import ArenaClient from "@/components/arena/ArenaClient";
 import { getChallengeSummaries } from "@/lib/challenges";
 
@@ -34,6 +35,36 @@ export default function ArenaPage() {
         </section>
 
         <ArenaClient challenges={challenges} />
+
+        <section className="glass-card rounded-3xl p-8 shadow-sm">
+          <h2 className="mb-6 text-center text-2xl font-semibold text-slate-100">More Challenges</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Link
+              href="/trivia"
+              className="glass-card group rounded-2xl p-6 text-left transition-all hover:-translate-y-1 hover:border-violet-500/50"
+            >
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-violet-500/20">
+                <span className="text-2xl">🧠</span>
+              </div>
+              <h3 className="mb-2 text-xl font-semibold text-violet-100">Trivia Arena</h3>
+              <p className="text-sm text-slate-300">
+                Test your polymath knowledge across technology, physics, economics, history, and sports.
+              </p>
+            </Link>
+            <Link
+              href="/connections"
+              className="glass-card group rounded-2xl p-6 text-left transition-all hover:-translate-y-1 hover:border-blue-500/50"
+            >
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20">
+                <span className="text-2xl">🔗</span>
+              </div>
+              <h3 className="mb-2 text-xl font-semibold text-blue-100">Connections Game</h3>
+              <p className="text-sm text-slate-300">
+                Find groups of four related words in this NYT-style puzzle spanning multiple domains.
+              </p>
+            </Link>
+          </div>
+        </section>
 
         <section className="glass-card grid gap-6 rounded-3xl p-8 shadow-sm md:grid-cols-2">
           <div>

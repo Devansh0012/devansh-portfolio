@@ -24,6 +24,38 @@
   --accent-primary: #3b82f6; /* blue-500 */
   --accent-secondary: #8b5cf6; /* violet-500 */
   --accent-emerald: #10b981; /* emerald-500 */
+
+  /* Polymath Theme - Category Colors */
+  --color-history: #d97706; /* amber-600 - antiqued, warm */
+  --color-physics: #0ea5e9; /* sky-500 - electric, scientific */
+  --color-economics: #10b981; /* emerald-500 - growth, money */
+  --color-sports: #f59e0b; /* amber-500 - gold medal */
+  --color-technology: #8b5cf6; /* violet-500 - innovation */
+  --color-general: #ec4899; /* pink-500 - synthesis */
+
+  /* Antiqued/Vintage Tones (for historical elements) */
+  --vintage-amber: #d97706;
+  --vintage-copper: #b45309;
+  --vintage-bronze: #92400e;
+  --parchment: #fef3c7;
+  --parchment-dark: #fde68a;
+
+  /* Scientific/Physics Colors */
+  --quantum-blue: #0284c7;
+  --electric-cyan: #06b6d4;
+  --plasma-purple: #a855f7;
+  --energy-yellow: #facc15;
+
+  /* Sports/Achievement Colors */
+  --gold-medal: #fbbf24;
+  --silver-medal: #cbd5e1;
+  --bronze-medal: #d97706;
+
+  /* Status & Feedback */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
 }
 
 body {
@@ -79,4 +111,409 @@ a {
 /* Smooth transitions for all interactive elements */
 * {
   transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+
+/* ====================
+   POLYMATH THEME UTILITIES
+   ==================== */
+
+/* Category-themed glows */
+.glow-history {
+  box-shadow: 0 0 20px rgba(217, 119, 6, 0.3);
+  text-shadow: 0 0 12px rgba(217, 119, 6, 0.4);
+}
+
+.glow-physics {
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+  text-shadow: 0 0 12px rgba(14, 165, 233, 0.4);
+}
+
+.glow-economics {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  text-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+.glow-sports {
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+  text-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+}
+
+.glow-technology {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  text-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+}
+
+/* Vintage paper effect (for historical timeline, reading room) */
+.vintage-paper {
+  background: linear-gradient(
+    135deg,
+    rgba(254, 243, 199, 0.05) 0%,
+    rgba(253, 230, 138, 0.03) 50%,
+    rgba(217, 119, 6, 0.02) 100%
+  );
+  border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+.vintage-paper:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(254, 243, 199, 0.08) 0%,
+    rgba(253, 230, 138, 0.05) 50%,
+    rgba(217, 119, 6, 0.03) 100%
+  );
+}
+
+/* Scientific/Blueprint style (for physics playground) */
+.blueprint {
+  background: linear-gradient(
+    180deg,
+    rgba(2, 132, 199, 0.05) 0%,
+    rgba(6, 182, 212, 0.02) 100%
+  );
+  border: 1px solid rgba(14, 165, 233, 0.3);
+}
+
+.blueprint-grid {
+  background-image:
+    linear-gradient(rgba(14, 165, 233, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14, 165, 233, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Sports scoreboard style */
+.scoreboard {
+  background: linear-gradient(
+    90deg,
+    rgba(15, 23, 42, 0.95) 0%,
+    rgba(30, 41, 59, 0.9) 50%,
+    rgba(15, 23, 42, 0.95) 100%
+  );
+  border: 2px solid var(--gold-medal);
+  box-shadow:
+    inset 0 1px 0 rgba(251, 191, 36, 0.2),
+    0 4px 20px rgba(245, 158, 11, 0.15);
+}
+
+/* Economic chart style (green = gains, red = losses) */
+.gain {
+  color: var(--success);
+}
+
+.loss {
+  color: var(--error);
+}
+
+.neutral {
+  color: var(--text-tertiary);
+}
+
+/* Animated gradient for knowledge graph nodes */
+@keyframes pulse-gradient {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.node-pulse {
+  animation: pulse-gradient 2s ease-in-out infinite;
+}
+
+/* Constellation/observatory theme */
+.constellation-bg {
+  background: radial-gradient(
+    circle at 20% 50%,
+    rgba(59, 130, 246, 0.1) 0%,
+    transparent 50%
+  ),
+  radial-gradient(
+    circle at 80% 50%,
+    rgba(139, 92, 246, 0.1) 0%,
+    transparent 50%
+  ),
+  var(--background-primary);
+  position: relative;
+}
+
+/* Starfield effect */
+.stars {
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(2px 2px at 60px 70px, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 50px 50px, rgba(255, 255, 255, 0.2), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(2px 2px at 90px 10px, rgba(255, 255, 255, 0.5), transparent);
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
+/* Floating animation for knowledge graph nodes */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.float-delay-1 {
+  animation: float 3s ease-in-out infinite 0.5s;
+}
+
+.float-delay-2 {
+  animation: float 3s ease-in-out infinite 1s;
+}
+
+/* Parallax scrolling sections */
+.parallax-slow {
+  transform: translateZ(-1px) scale(2);
+}
+
+.parallax-medium {
+  transform: translateZ(-0.5px) scale(1.5);
+}
+
+.parallax-fast {
+  transform: translateZ(0);
+}
+
+/* Timeline connector lines */
+.timeline-line {
+  position: relative;
+}
+
+.timeline-line::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    var(--accent-primary) 20%,
+    var(--accent-secondary) 80%,
+    transparent 100%
+  );
+}
+
+/* Card stack effect (for books in reading room) */
+.card-stack {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 8px 0 -3px var(--surface-card),
+    0 9px 1px -3px rgba(0, 0, 0, 0.2),
+    0 16px 0 -6px var(--surface-card),
+    0 17px 2px -6px rgba(0, 0, 0, 0.2);
+}
+
+/* Trivia card flip animation */
+@keyframes flip {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(180deg);
+  }
+}
+
+.flip-card {
+  perspective: 1000px;
+}
+
+.flip-card-inner {
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.flip-card:hover .flip-card-inner,
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  backface-visibility: hidden;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+}
+
+/* Progress bars (for stats, achievements) */
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--surface-card);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--accent-primary) 0%,
+    var(--accent-secondary) 100%
+  );
+  border-radius: 9999px;
+  transition: width 1s ease-out;
+}
+
+/* Achievement badge styling */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.badge-gold {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.1));
+  border-color: var(--gold-medal);
+  color: var(--gold-medal);
+}
+
+.badge-silver {
+  background: linear-gradient(135deg, rgba(203, 213, 225, 0.2), rgba(148, 163, 184, 0.1));
+  border-color: var(--silver-medal);
+  color: var(--silver-medal);
+}
+
+.badge-bronze {
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.2), rgba(180, 83, 9, 0.1));
+  border-color: var(--bronze-medal);
+  color: var(--bronze-medal);
+}
+
+/* Stat card (sports-style) */
+.stat-card {
+  text-align: center;
+  padding: 1.5rem;
+  background: var(--surface-glass);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-primary);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.5rem;
+}
+
+/* Interactive node (for knowledge graph) */
+.knowledge-node {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.knowledge-node:hover {
+  transform: scale(1.1);
+  z-index: 10;
+}
+
+.knowledge-node::after {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  background: radial-gradient(circle, currentColor 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.knowledge-node:hover::after {
+  opacity: 0.2;
+}
+
+/* Fade-in animations for sections */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.fade-in-delay-1 {
+  animation: fadeInUp 0.6s ease-out 0.2s backwards;
+}
+
+.fade-in-delay-2 {
+  animation: fadeInUp 0.6s ease-out 0.4s backwards;
+}
+
+.fade-in-delay-3 {
+  animation: fadeInUp 0.6s ease-out 0.6s backwards;
+}
+
+/* Responsive typography scale */
+@media (max-width: 768px) {
+  .stat-value {
+    font-size: 2rem;
+  }
+}
+
+/* Dark mode optimizations (already in dark mode, but for consistency) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+}
+
+/* Accessibility - respect user preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -10,6 +10,8 @@ import {
   skillCategories,
   testimonials,
 } from "@/lib/data";
+import SportsStatsShowcase from "@/components/SportsStatsShowcase";
+import EconomicDashboard from "@/components/EconomicDashboard";
 
 export const metadata: Metadata = {
   title: "Recruiter Mode",
@@ -191,6 +193,18 @@ export default function RecruiterPage() {
               </article>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="bg-slate-950/50 text-slate-100">
+        <div className="mx-auto max-w-6xl px-4 py-16">
+          <SportsStatsShowcase />
+        </div>
+      </section>
+
+      <section className="bg-slate-900/50 text-slate-100">
+        <div className="mx-auto max-w-6xl px-4 py-16">
+          <EconomicDashboard />
         </div>
       </section>
 

@@ -4,6 +4,7 @@ import type { Route } from "next";
 import { ArrowRight, Cpu, Joystick, ListTree, NotebookPen } from "lucide-react";
 import TerminalIntro from "@/components/TerminalIntro";
 import MiniDemos from "@/components/MiniDemos";
+import Observatory from "@/components/Observatory";
 import { projects } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -69,39 +70,7 @@ export default function EngineerPage() {
 
       <section id="projects" className="border-t border-slate-500/10 bg-slate-950/50">
         <div className="mx-auto max-w-6xl px-4 py-16">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Projects</p>
-              <h2 className="text-3xl font-semibold text-slate-100">Latest experiments</h2>
-            </div>
-            <p className="max-w-xl text-sm text-slate-300">
-              Each project emphasises resilience, observability, and developer experience.
-            </p>
-          </div>
-          <div className="mt-8 grid gap-6 md:grid-cols-2">
-            {projects.map((project) => (
-              <article key={project.title} className="glass-card flex h-full flex-col rounded-2xl p-6">
-                <h3 className="text-xl font-semibold text-slate-100">{project.title}</h3>
-                <p className="mt-3 text-sm text-slate-300">{project.description}</p>
-                <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-slate-400">
-                  {project.tech.map((tech) => (
-                    <span key={tech} className="rounded-full border border-slate-500/30 px-3 py-1">
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-                <a
-                  href={project.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-blue-300 hover:text-blue-200"
-                >
-                  Inspect repository
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-              </article>
-            ))}
-          </div>
+          <Observatory />
         </div>
       </section>
 

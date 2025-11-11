@@ -9,8 +9,11 @@ import { Menu, X } from "lucide-react";
 const links = [
   { label: "Recruiter", href: "/recruiter" },
   { label: "Engineer", href: "/engineer" },
+  { label: "Explorer", href: "/explorer" },
   { label: "Blog", href: "/blog" },
   { label: "Arena", href: "/arena" },
+  { label: "Trivia", href: "/trivia" },
+  { label: "Connections", href: "/connections" },
   { label: "Leaderboard", href: "/arena/leaderboard" },
   { label: "Community", href: "/community" },
 ] satisfies Array<{ label: string; href: Route }>;
