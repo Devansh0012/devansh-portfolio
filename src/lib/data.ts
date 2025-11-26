@@ -79,7 +79,7 @@ export const skillCategories: SkillCategory[] = [
 export const experiences: Experience[] = [
   {
     company: "Docxster",
-    role: "Associate Software Engineer",
+    role: "Software Development Engineer",
     start: "Dec 2024",
     end: "Present",
     location: "Bengaluru, India",

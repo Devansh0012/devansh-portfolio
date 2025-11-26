@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 
 interface SubscriptionFormProps {
   type: 'community' | 'blog';
@@ -108,13 +109,15 @@ function SubscriptionFormContent({
             disabled={loading}
             className="w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-200 shadow-sm focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-600 disabled:opacity-50"
           />
-          <button
+          <Button
             type="submit"
             disabled={loading || !email.trim()}
-            className="w-full rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:bg-white disabled:opacity-50 disabled:hover:translate-y-0"
+            variant="primary"
+            size="md"
+            className="w-full"
           >
             {loading ? 'Sending...' : buttonText}
-          </button>
+          </Button>
         </form>
       </div>
     );
@@ -135,13 +138,15 @@ function SubscriptionFormContent({
         disabled={loading}
         className="w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-200 shadow-sm focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-600 disabled:opacity-50"
       />
-      <button
+      <Button
         type="submit"
         disabled={loading || !email.trim()}
-        className="w-full rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:bg-white disabled:opacity-50 disabled:hover:translate-y-0"
+        variant="primary"
+        size="md"
+        className="w-full"
       >
         {loading ? 'Sending...' : buttonText}
-      </button>
+      </Button>
       
       {message && (
         <div className={`glass-card rounded-xl p-4 ${
@@ -178,12 +183,14 @@ export default function SubscriptionForm(props: SubscriptionFormProps) {
           placeholder="Loading..."
           className="w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-200 shadow-sm opacity-50"
         />
-        <button
+        <Button
           disabled
-          className="w-full rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-900 opacity-50"
+          variant="primary"
+          size="md"
+          className="w-full"
         >
           Loading...
-        </button>
+        </Button>
       </div>
     }>
       <SubscriptionFormContent {...props} />

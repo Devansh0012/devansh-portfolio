@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: "%s | Devansh Dubey",
   },
   description:
-    "Associate Software Engineer crafting resilient distributed systems, hackathon winner, and lifelong learner.",
+    "Software Development Engineer crafting resilient distributed systems, hackathon winner, and lifelong learner.",
   keywords: [
     "Devansh Dubey",
     "Software Engineer",
@@ -75,11 +75,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} text-slate-100 antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-black text-white antialiased`}
       >
-        <div className="gradient-overlay relative min-h-screen">
+        <div className="relative min-h-screen">
           <div className="flex min-h-screen flex-col">
             <Navbar />
             <main className="flex-1">{children}</main>

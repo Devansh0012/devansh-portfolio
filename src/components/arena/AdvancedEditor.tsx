@@ -404,20 +404,20 @@ export default function AdvancedEditor({
   }, [fontSize, tabSize, wordWrap, minimap]);
 
   return (
-    <div className={`glass-card relative overflow-hidden rounded-2xl ${isFullscreen ? 'fixed inset-4 z-50' : ''} ${className}`}>
+    <div className={`relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl ${isFullscreen ? 'fixed inset-4 z-50' : ''} ${className}`}>
       {/* Editor Header */}
-      <div className="glass border-b border-slate-500/20 px-4 py-3">
+      <div className="border-b border-white/10 bg-white/5 px-4 py-3 backdrop-blur-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Language Selector */}
             <select
               value={language}
               onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
-              className="glass-card rounded-lg border border-slate-500/30 px-3 py-1.5 text-sm text-slate-100 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/20"
+              className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-sm text-white focus:border-white/50 focus:outline-none focus:ring-2 focus:ring-white/20"
               aria-label="Select programming language"
             >
               {Object.entries(LANGUAGE_CONFIGS).map(([key, config]) => (
-                <option key={key} value={key} className="bg-slate-800 text-slate-100">
+                <option key={key} value={key} className="bg-neutral-900 text-white">
                   {config.label}
                 </option>
               ))}
@@ -427,11 +427,11 @@ export default function AdvancedEditor({
             <select
               value={theme}
               onChange={(e) => setTheme(e.target.value as EditorTheme)}
-              className="glass-card rounded-lg border border-slate-500/30 px-3 py-1.5 text-sm text-slate-100 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/20"
+              className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-sm text-white focus:border-white/50 focus:outline-none focus:ring-2 focus:ring-white/20"
               aria-label="Select editor theme"
             >
               {Object.entries(THEMES).map(([key, config]) => (
-                <option key={key} value={key} className="bg-slate-800 text-slate-100">
+                <option key={key} value={key} className="bg-neutral-900 text-white">
                   {config.icon} {config.label}
                 </option>
               ))}
@@ -442,31 +442,31 @@ export default function AdvancedEditor({
             {/* Action Buttons */}
             <button
               onClick={handleCopy}
-              className="glass-hover rounded-lg p-2 text-slate-300 transition-colors hover:text-blue-400"
+              className="rounded-lg p-2 text-neutral-300 transition-colors hover:bg-white/10 hover:text-white"
               title="Copy code (Ctrl+C)"
             >
               <Copy className="h-4 w-4" />
             </button>
-            
+
             <button
               onClick={handleUpload}
-              className="glass-hover rounded-lg p-2 text-slate-300 transition-colors hover:text-blue-400"
+              className="rounded-lg p-2 text-neutral-300 transition-colors hover:bg-white/10 hover:text-white"
               title="Upload file"
             >
               <Upload className="h-4 w-4" />
             </button>
-            
+
             <button
               onClick={handleDownload}
-              className="glass-hover rounded-lg p-2 text-slate-300 transition-colors hover:text-blue-400"
+              className="rounded-lg p-2 text-neutral-300 transition-colors hover:bg-white/10 hover:text-white"
               title="Download file"
             >
               <Download className="h-4 w-4" />
             </button>
-            
+
             <button
               onClick={handleReset}
-              className="glass-hover rounded-lg p-2 text-slate-300 transition-colors hover:text-yellow-400"
+              className="rounded-lg p-2 text-neutral-300 transition-colors hover:bg-white/10 hover:text-white"
               title="Reset to template"
             >
               <RotateCcw className="h-4 w-4" />
@@ -474,7 +474,7 @@ export default function AdvancedEditor({
 
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="glass-hover rounded-lg p-2 text-slate-300 transition-colors hover:text-blue-400"
+              className="rounded-lg p-2 text-neutral-300 transition-colors hover:bg-white/10 hover:text-white"
               title="Editor settings"
             >
               <Settings className="h-4 w-4" />
@@ -484,7 +484,7 @@ export default function AdvancedEditor({
               <button
                 onClick={onRun}
                 disabled={isLoading}
-                className="glass-card glass-hover inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-slate-100 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-white/20 hover:shadow-lg hover:shadow-white/25 disabled:cursor-not-allowed disabled:opacity-50"
                 title="Run code (Ctrl+Enter)"
               >
                 <Play className="h-4 w-4" />
@@ -494,7 +494,7 @@ export default function AdvancedEditor({
 
             <button
               onClick={toggleFullscreen}
-              className="glass-hover rounded-lg p-2 text-slate-300 transition-colors hover:text-blue-400"
+              className="rounded-lg p-2 text-neutral-300 transition-colors hover:bg-white/10 hover:text-white"
               title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
             >
               {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
@@ -504,10 +504,10 @@ export default function AdvancedEditor({
 
         {/* Settings Panel */}
         {showSettings && (
-          <div className="glass-card mt-3 rounded-lg border border-slate-500/20 p-4">
+          <div className="mt-3 rounded-lg border border-white/10 bg-white/5 p-4 backdrop-blur-xl">
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               <div>
-                <label className="block text-xs font-medium text-slate-300">Font Size</label>
+                <label className="block text-xs font-medium text-neutral-300">Font Size</label>
                 <input
                   type="range"
                   min="10"
@@ -517,15 +517,15 @@ export default function AdvancedEditor({
                   className="w-full"
                   aria-label="Font size"
                 />
-                <span className="text-xs text-slate-400">{fontSize}px</span>
+                <span className="text-xs text-neutral-400">{fontSize}px</span>
               </div>
-              
+
               <div>
-                <label className="block text-xs font-medium text-slate-300">Tab Size</label>
+                <label className="block text-xs font-medium text-neutral-300">Tab Size</label>
                 <select
                   value={tabSize}
                   onChange={(e) => setTabSize(Number(e.target.value))}
-                  className="w-full rounded border border-slate-500/30 bg-slate-700 px-2 py-1 text-xs text-slate-100"
+                  className="w-full rounded border border-white/20 bg-white/5 px-2 py-1 text-xs text-white"
                   aria-label="Tab size"
                 >
                   <option value={2}>2</option>
@@ -533,27 +533,27 @@ export default function AdvancedEditor({
                   <option value={8}>8</option>
                 </select>
               </div>
-              
+
               <div>
-                <label className="block text-xs font-medium text-slate-300">Word Wrap</label>
+                <label className="block text-xs font-medium text-neutral-300">Word Wrap</label>
                 <select
                   value={wordWrap}
                   onChange={(e) => setWordWrap(e.target.value as 'on' | 'off')}
-                  className="w-full rounded border border-slate-500/30 bg-slate-700 px-2 py-1 text-xs text-slate-100"
+                  className="w-full rounded border border-white/20 bg-white/5 px-2 py-1 text-xs text-white"
                   aria-label="Word wrap setting"
                 >
                   <option value="off">Off</option>
                   <option value="on">On</option>
                 </select>
               </div>
-              
+
               <div>
-                <label className="flex items-center gap-2 text-xs font-medium text-slate-300">
+                <label className="flex items-center gap-2 text-xs font-medium text-neutral-300">
                   <input
                     type="checkbox"
                     checked={minimap}
                     onChange={(e) => setMinimap(e.target.checked)}
-                    className="rounded border-slate-500/30"
+                    className="rounded border-white/20"
                   />
                   Minimap
                 </label>
@@ -573,8 +573,8 @@ export default function AdvancedEditor({
           onChange={(val) => onChange(val || "")}
           onMount={handleEditorDidMount}
           loading={
-            <div className="flex h-[500px] items-center justify-center text-slate-400">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+            <div className="flex h-[500px] items-center justify-center text-neutral-400">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
             </div>
           }
           options={{
@@ -609,14 +609,14 @@ export default function AdvancedEditor({
         
         {placeholder && !value && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <p className="text-slate-500 text-sm">{placeholder}</p>
+            <p className="text-neutral-500 text-sm">{placeholder}</p>
           </div>
         )}
       </div>
 
       {/* Status Bar */}
-      <div className="glass border-t border-slate-500/20 px-4 py-2">
-        <div className="flex items-center justify-between text-xs text-slate-400">
+      <div className="border-t border-white/10 bg-white/5 px-4 py-2 backdrop-blur-xl">
+        <div className="flex items-center justify-between text-xs text-neutral-400">
           <div className="flex items-center gap-4">
             <span>{LANGUAGE_CONFIGS[language].label}</span>
             <span>UTF-8</span>
@@ -632,27 +632,27 @@ export default function AdvancedEditor({
       {/* Language Change Confirmation Modal */}
       {showLanguageConfirmation && pendingLanguage && (
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="glass-card bg-slate-800/90 border border-slate-500/30 rounded-xl p-6 max-w-md mx-4 shadow-2xl">
+          <div className="bg-neutral-900/90 border border-white/20 rounded-xl p-6 max-w-md mx-4 shadow-2xl backdrop-blur-xl">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                <span className="text-amber-400 text-sm">⚠️</span>
+              <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                <span className="text-white text-sm">⚠️</span>
               </div>
-              <h3 className="text-lg font-semibold text-slate-100">Switch Language</h3>
+              <h3 className="text-lg font-semibold text-white">Switch Language</h3>
             </div>
-            <p className="text-slate-300 mb-6 leading-relaxed">
-              Switch to <span className="font-medium text-blue-400">{LANGUAGE_CONFIGS[pendingLanguage].label}</span>? 
+            <p className="text-neutral-300 mb-6 leading-relaxed">
+              Switch to <span className="font-medium text-white">{LANGUAGE_CONFIGS[pendingLanguage].label}</span>?
               This will replace your current code with the {LANGUAGE_CONFIGS[pendingLanguage].label} template.
             </p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={handleCancelLanguageChange}
-                className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-slate-100 hover:bg-slate-700/50 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmLanguageChange}
-                className="px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium bg-white text-black hover:bg-neutral-200 rounded-lg transition-colors"
               >
                 Switch
               </button>
@@ -664,27 +664,27 @@ export default function AdvancedEditor({
       {/* Reset Confirmation Modal */}
       {showResetConfirmation && (
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="glass-card bg-slate-800/90 border border-slate-500/30 rounded-xl p-6 max-w-md mx-4 shadow-2xl">
+          <div className="bg-neutral-900/90 border border-white/20 rounded-xl p-6 max-w-md mx-4 shadow-2xl backdrop-blur-xl">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center">
-                <RotateCcw className="w-4 h-4 text-red-400" />
+              <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                <RotateCcw className="w-4 h-4 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-100">Reset Code</h3>
+              <h3 className="text-lg font-semibold text-white">Reset Code</h3>
             </div>
-            <p className="text-slate-300 mb-6 leading-relaxed">
-              Reset to <span className="font-medium text-blue-400">{LANGUAGE_CONFIGS[language].label}</span> template? 
+            <p className="text-neutral-300 mb-6 leading-relaxed">
+              Reset to <span className="font-medium text-white">{LANGUAGE_CONFIGS[language].label}</span> template?
               This will replace your current code with the default template.
             </p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={handleCancelReset}
-                className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-slate-100 hover:bg-slate-700/50 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmReset}
-                className="px-4 py-2 text-sm font-medium bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium bg-white text-black hover:bg-neutral-200 rounded-lg transition-colors"
               >
                 Reset
               </button>

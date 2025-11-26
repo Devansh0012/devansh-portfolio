@@ -1,21 +1,17 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import type { Route } from "next";
 import { notFound } from "next/navigation";
 import { getAllPosts } from "@/lib/blog";
 import SubscriptionForm from "@/components/SubscriptionForm";
+import { CardSpotlight } from "@/components/ui/card-spotlight";
+import { BorderBeam } from "@/components/ui/border-beam";
+import BlogContent from "@/components/blog/BlogContent";
+import { GravityStarsBackground } from "@/components/animate-ui/components/backgrounds/gravity-stars";
 
 export const metadata: Metadata = {
   title: "Blog",
   description:
     "Engineering deep dives, hackathon stories, and behind-the-scenes logs from Devansh Dubey's work.",
 };
-
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
 
 type BlogSearchParams = { category?: string; tag?: string };
 
@@ -29,127 +25,58 @@ export default async function BlogIndexPage({
     notFound();
   }
 
-  const categories = Array.from(new Set(posts.map((post) => post.category)));
   const resolvedSearchParams = await searchParams;
-  const activeCategory = resolvedSearchParams?.category;
-  const activeTag = resolvedSearchParams?.tag;
-
-  const filteredPosts = posts.filter((post) => {
-    const categoryMatch = activeCategory ? post.category === activeCategory : true;
-    const tagMatch = activeTag ? post.tags.includes(activeTag) : true;
-    return categoryMatch && tagMatch;
-  });
 
   return (
-    <div className="bg-gray-950 text-gray-100">
+    <div className="relative min-h-screen bg-black text-white">
+      <GravityStarsBackground className="absolute inset-0 -z-10" starsCount={100} starsSize={2} />
       <section className="mx-auto max-w-6xl px-4 pb-16 pt-20 md:pt-24">
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <div className="space-y-8">
           <div className="space-y-4">
-            <p className="inline-flex items-center gap-2 rounded-full border border-gray-800 bg-gray-900 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-gray-400">
+            <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-neutral-400">
               Blog
             </p>
-            <h1 className="text-4xl font-semibold md:text-5xl">Stories from the build log</h1>
-            <p className="max-w-2xl text-sm text-gray-400">
+            <h1 className="text-glow text-4xl font-semibold md:text-5xl">Stories from the build log</h1>
+            <p className="max-w-2xl text-sm text-neutral-300">
               Deep dives from production incidents, design docs, hackathon sprints, and community workshops. Expect
               practical systems design takeaways and honest retrospectives.
             </p>
             <div className="flex flex-wrap gap-3 text-xs">
               <a
                 href="/rss.xml"
-                className="inline-flex items-center gap-2 rounded-full border border-gray-800 px-4 py-2 font-semibold text-gray-300 transition hover:border-gray-700"
+                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 font-semibold text-neutral-300 transition hover:bg-white/10"
               >
                 Subscribe via RSS
               </a>
-              <Link
-                href={{ pathname: "/community" }}
-                className="inline-flex items-center gap-2 rounded-full border border-gray-800 px-4 py-2 font-semibold text-gray-300 transition hover:border-gray-700"
-              >
-                Join the newsletter
-              </Link>
             </div>
           </div>
-          <div className="rounded-3xl border border-gray-800 bg-gray-900 p-6 shadow-sm">
-            <h2 className="text-sm font-semibold text-gray-300">Filter by category</h2>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Link
-                href={{ pathname: "/blog" }}
-                className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                  activeCategory ? "border-gray-800 text-gray-500" : "border-gray-100 bg-gray-100 text-gray-900"
-                }`}
-              >
-                All posts
-              </Link>
-              {categories.map((category) => (
-                <Link
-                  key={category}
-                  href={{ pathname: "/blog", query: { category } }}
-                  className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                    activeCategory === category
-                      ? "border-gray-100 bg-gray-100 text-gray-900"
-                      : "border-gray-800 text-gray-500 hover:border-gray-700"
-                  }`}
-                >
-                  {category}
-                </Link>
-              ))}
-            </div>
-          </div>
+
+          <BlogContent
+            posts={posts}
+            initialTag={resolvedSearchParams?.tag}
+          />
         </div>
       </section>
 
-      <section className="border-t border-gray-800 bg-gray-900">
-        <div className="mx-auto max-w-6xl px-4 py-16">
-          <div className="grid gap-6 md:grid-cols-2">
-            {filteredPosts.map((post) => (
-              <article key={post.slug} className="flex h-full flex-col rounded-2xl border border-gray-800 bg-gray-950 p-6 shadow-sm">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-500">{dateFormatter.format(new Date(post.date))}</p>
-                <h2 className="mt-3 text-2xl font-semibold text-gray-100">{post.title}</h2>
-                <p className="mt-2 text-sm text-gray-400">{post.description}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {post.tags.map((tag) => (
-                    <Link
-                      key={tag}
-                      href={{ pathname: "/blog", query: { tag } }}
-                      className="rounded-full border border-gray-800 bg-gray-900 px-3 py-1 text-xs font-semibold text-gray-400 transition hover:border-gray-700"
-                    >
-                      #{tag}
-                    </Link>
-                  ))}
-                </div>
-                <div className="mt-6 flex items-center justify-between text-xs text-gray-500">
-                  <span>{post.readingTime}</span>
-                  <Link
-                    href={`/blog/${post.slug}` as Route}
-                    className="text-sm font-semibold text-gray-100"
-                  >
-                    Read story →
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
-          {filteredPosts.length === 0 && (
-            <div className="rounded-3xl border border-gray-800 bg-gray-950 p-10 text-center">
-              <p className="text-sm text-gray-400">No posts found for that filter. Try another category or tag.</p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section className="border-t border-gray-800 bg-gray-950">
+      <section className="border-t border-white/5 bg-black">
         <div className="mx-auto max-w-4xl px-4 py-16 text-center">
-          <h2 className="text-3xl font-semibold text-gray-100">Get new posts in your inbox</h2>
-          <p className="mt-3 text-sm text-gray-400">
-            Monthly digest with engineering deep dives, incident retrospectives, and community events. Zero spam, ever.
-          </p>
-          <div className="mt-6 max-w-md mx-auto">
-            <SubscriptionForm 
-              type="blog" 
-              placeholder="you@amazingteam.com"
-              buttonText="Subscribe"
-              className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
-            />
-          </div>
+          <CardSpotlight className="relative overflow-hidden rounded-3xl p-12" radius={500} color="#0a0a0a">
+            <BorderBeam size={250} duration={15} delay={0} colorFrom="#ffffff" colorTo="#525252" />
+            <div className="relative z-20">
+              <h2 className="text-3xl font-semibold text-white">Get new posts in your inbox</h2>
+              <p className="mt-3 text-sm text-neutral-300">
+                Monthly digest with engineering deep dives, incident retrospectives, and community events. Zero spam, ever.
+              </p>
+              <div className="mt-6 max-w-md mx-auto">
+                <SubscriptionForm
+                  type="blog"
+                  placeholder="you@amazingteam.com"
+                  buttonText="Subscribe"
+                  className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
+                />
+              </div>
+            </div>
+          </CardSpotlight>
         </div>
       </section>
     </div>

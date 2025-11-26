@@ -64,7 +64,7 @@ const fileSystem: Record<string, FileSystemNode> = {
           },
           "about.txt": {
             type: "file",
-            content: "👨‍💻 Devansh Dubey\nAssociate Software Engineer\n\nPassionate about:\n- Distributed Systems\n- Developer Tooling\n- Open Source\n\nConnect: /recruiter or /engineer",
+            content: "👨‍💻 Devansh Dubey\nSoftware Development Engineer\n\nPassionate about:\n- Distributed Systems\n- Developer Tooling\n- Open Source\n\nConnect: /recruiter or /engineer",
           },
         },
       },
@@ -219,7 +219,7 @@ export default function TerminalIntro() {
                 🚀 Welcome to Devansh&apos;s Dev Environment
               </div>
               <div className="text-slate-400 text-xs mt-0.5">
-                Associate Software Engineer | Distributed Systems Enthusiast
+                Software Development Engineer | Distributed Systems Enthusiast
               </div>
             </div>
             <div className="text-slate-300 text-xs mb-0.5">

@@ -7,6 +7,7 @@ import { Brain, Trophy } from "lucide-react";
 import AdvancedEditor, { type SupportedLanguage } from "./AdvancedEditor";
 import type { ChallengeSummary } from "@/lib/challenges";
 import type { LeaderboardEntry } from "@/lib/leaderboard";
+import { Button } from "@/components/ui/Button";
 
 type EvaluateResponse = {
   summary: {
@@ -35,9 +36,9 @@ type Props = {
 };
 
 const difficultyColors: Record<ChallengeSummary["difficulty"], string> = {
-  "Basic": "bg-emerald-100 text-emerald-700",
-  "Intermediate": "bg-amber-100 text-amber-700",
-  "Advanced": "bg-rose-100 text-rose-700",
+  "Basic": "bg-neutral-200 text-neutral-800",
+  "Intermediate": "bg-neutral-300 text-neutral-900",
+  "Advanced": "bg-neutral-100 text-neutral-700",
 };
 
 export default function ArenaClient({ challenges }: Props) {
@@ -136,14 +137,14 @@ export default function ArenaClient({ challenges }: Props) {
   }, [handleSubmit]);
 
   if (!challenge) {
-    return <p className="text-sm text-slate-400">No challenges available right now. Check back soon!</p>;
+    return <p className="text-sm text-neutral-400">No challenges available right now. Check back soon!</p>;
   }
 
   return (
     <div className="grid gap-8 lg:grid-cols-[320px_minmax(0,1fr)]">
       <aside className="space-y-4">
-        <div className="glass-card rounded-3xl p-4 shadow-sm">
-          <h2 className="text-sm font-semibold text-slate-100">Challenges</h2>
+        <div className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-sm backdrop-blur-xl">
+          <h2 className="text-sm font-semibold text-white">Challenges</h2>
           <div className="mt-3 flex flex-col gap-2">
             {challenges.map((item) => (
               <button
@@ -153,8 +154,8 @@ export default function ArenaClient({ challenges }: Props) {
                 className={clsx(
                   "rounded-2xl border px-3 py-3 text-left text-sm transition-all duration-300",
                   item.id === challenge.id
-                    ? "glass-card border-blue-500/50 bg-blue-500/20 text-slate-100 shadow-lg shadow-blue-500/20"
-                    : "glass-hover border-slate-500/30 text-slate-300 hover:border-slate-400 hover:text-slate-100",
+                    ? "border-white/50 bg-white/20 text-white shadow-lg shadow-white/20"
+                    : "border-white/10 text-neutral-300 hover:border-white/30 hover:bg-white/5 hover:text-white",
                 )}
               >
                 <div className="flex items-center justify-between">
@@ -163,46 +164,46 @@ export default function ArenaClient({ challenges }: Props) {
                     {item.difficulty}
                   </span>
                 </div>
-                <p className="mt-1 text-xs text-slate-400">{item.description}</p>
+                <p className="mt-1 text-xs text-neutral-400">{item.description}</p>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="glass-card rounded-3xl p-4 shadow-sm">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-100">
-            <Trophy className="h-4 w-4 text-blue-400" /> Leaderboard
+        <div className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-sm backdrop-blur-xl">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-white">
+            <Trophy className="h-4 w-4 text-white" /> Leaderboard
           </div>
           <div className="mt-4 space-y-3">
-            {leaderboard.length === 0 && <p className="text-xs text-slate-400">Be the first to submit a spotless run.</p>}
+            {leaderboard.length === 0 && <p className="text-xs text-neutral-400">Be the first to submit a spotless run.</p>}
             {leaderboard.slice(0, 6).map((entry, index) => (
-              <div key={entry.id} className="glass-hover rounded-2xl border border-slate-500/30 p-3 text-xs transition-all duration-300">
+              <div key={entry.id} className="rounded-2xl border border-white/10 bg-white/5 p-3 text-xs transition-all duration-300 hover:bg-white/10">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-slate-200">
+                  <span className="font-semibold text-neutral-200">
                     #{index + 1} {entry.handle}
                   </span>
-                  <span className="text-blue-400 font-bold">{entry.score}</span>
+                  <span className="text-white font-bold">{entry.score}</span>
                 </div>
-                <p className="mt-1 text-slate-400">{entry.challengeTitle}</p>
-                <p className="text-[0.65rem] text-slate-500">
+                <p className="mt-1 text-neutral-400">{entry.challengeTitle}</p>
+                <p className="text-[0.65rem] text-neutral-500">
                   {entry.testsPassed}/{entry.totalTests} tests · {entry.runtimeMs}ms
                 </p>
               </div>
             ))}
           </div>
-          <Link href="/arena/leaderboard" className="mt-4 inline-block text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors">
+          <Link href="/arena/leaderboard" className="mt-4 inline-block text-xs font-semibold text-white hover:text-neutral-300 transition-colors">
             View full leaderboard →
           </Link>
         </div>
       </aside>
 
       <main className="space-y-6">
-        <div className="glass-card rounded-3xl p-6 shadow-sm">
-          <p className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-blue-300">
+        <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-sm backdrop-blur-xl">
+          <p className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-neutral-300">
             <Brain className="h-4 w-4" /> {challenge.difficulty}
           </p>
-          <h1 className="text-glow mt-4 text-2xl font-semibold text-slate-100">{challenge.title}</h1>
-          <p className="mt-2 text-sm text-slate-300">{challenge.prompt}</p>
+          <h1 className="text-glow mt-4 text-2xl font-semibold text-white">{challenge.title}</h1>
+          <p className="mt-2 text-sm text-neutral-300">{challenge.prompt}</p>
         </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
@@ -216,8 +217,8 @@ export default function ArenaClient({ challenges }: Props) {
             placeholder="Start coding here..."
           />
 
-          <div className="glass-card rounded-3xl p-4 shadow-sm">
-            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-300" htmlFor="arena-handle">
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-sm backdrop-blur-xl">
+            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-neutral-300" htmlFor="arena-handle">
               Display name
             </label>
             <input
@@ -226,37 +227,38 @@ export default function ArenaClient({ challenges }: Props) {
               value={handle}
               onChange={(event) => setHandle(event.target.value)}
               placeholder="hackathon-hero"
-              className="mt-2 w-full rounded-xl border border-slate-500/30 bg-slate-700/50 px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/20"
+              className="mt-2 w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-sm text-white placeholder-neutral-400 focus:border-white/50 focus:outline-none focus:ring-2 focus:ring-white/20"
             />
-            <p className="mt-2 text-[0.7rem] text-slate-400">
+            <p className="mt-2 text-[0.7rem] text-neutral-400">
               Your handle appears on the leaderboard when you beat all tests.
             </p>
           </div>
 
           {error && (
-            <div className="glass-card rounded-xl border border-red-500/30 bg-red-500/10 p-4">
+            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 backdrop-blur-xl">
               <pre className="text-sm text-red-300 whitespace-pre-wrap font-mono">{error}</pre>
             </div>
           )}
 
           <div className="flex flex-wrap items-center gap-3">
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="glass-card glass-hover inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-slate-100 shadow transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+              variant="secondary"
+              size="md"
             >
               {loading ? "Evaluating…" : "Run tests"}
-            </button>
-            <span className="text-xs text-slate-400">
+            </Button>
+            <span className="text-xs text-neutral-400">
               Tests execute inside a sandboxed VM with a 1.5s time budget.
             </span>
           </div>
         </form>
 
         {summary && (
-          <div className="glass-card rounded-3xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-100">Results</h2>
-            <p className="mt-1 text-sm text-slate-300">
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-sm backdrop-blur-xl">
+            <h2 className="text-lg font-semibold text-white">Results</h2>
+            <p className="mt-1 text-sm text-neutral-300">
               {summary.testsPassed}/{summary.totalTests} tests · Score {summary.score} · Runtime {summary.runtimeMs}ms
             </p>
             <div className="mt-4 space-y-3">
@@ -266,7 +268,7 @@ export default function ArenaClient({ challenges }: Props) {
                   className={clsx(
                     "rounded-2xl border px-4 py-3 text-sm",
                     result.passed
-                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                      ? "border-white/30 bg-white/10 text-neutral-200"
                       : "border-red-500/30 bg-red-500/10 text-red-300",
                   )}
                 >

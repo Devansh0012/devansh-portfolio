@@ -301,7 +301,7 @@ Didn't sign up for this? Unsubscribe: ${unsubscribeUrl}
 
 Best regards,
 Devansh Dubey
-Associate Software Engineer
+Software Development Engineer
 https://www.devanshdubey.com
 `
   };

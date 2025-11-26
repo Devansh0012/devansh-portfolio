@@ -2,6 +2,11 @@ import Link from "next/link";
 import type { Route } from "next";
 import { ArrowRight, TerminalSquare, Trophy, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { CardSpotlight } from "@/components/ui/card-spotlight";
+import { BorderBeam } from "@/components/ui/border-beam";
+import { Button } from "@/components/ui/Button";
+import { GravityStarsBackground } from "@/components/animate-ui/components/backgrounds/gravity-stars";
+import { IntroScreen } from "@/components/IntroScreen";
 
 const modes = [
   {
@@ -20,32 +25,31 @@ const modes = [
 
 export default function HomePage() {
   return (
-    <div className="relative isolate min-h-screen text-slate-100">
-      <div className="absolute inset-x-0 top-0 -z-10 h-[600px] bg-gradient-to-br from-blue-500/20 via-violet-500/10 to-transparent blur-3xl" />
-
-      <section className="mx-auto flex max-w-4xl flex-col items-center px-4 pb-24 pt-32 text-center md:pt-40">
-        <p className="text-sm uppercase tracking-[0.35em] text-blue-300">
-          Associate Software Engineer
-        </p>
-        <h1 className="text-glow mt-6 text-5xl font-semibold leading-tight text-slate-100 md:text-6xl">
+    <IntroScreen>
+      <div className="relative isolate min-h-screen bg-black text-white">
+        <GravityStarsBackground className="absolute inset-0 -z-10" starsCount={100} starsSize={2} />
+        <section className="mx-auto flex max-w-4xl flex-col items-center px-4 pb-24 pt-32 text-center md:pt-40">
+          <p className="text-sm uppercase tracking-[0.35em] text-neutral-400">
+            Software Development Engineer
+          </p>
+        <h1 className="text-glow mt-6 text-5xl font-semibold leading-tight text-white md:text-6xl">
           Devansh Dubey
         </h1>
-        <p className="mt-6 max-w-2xl text-xl text-slate-300">
+        <p className="mt-6 max-w-2xl text-xl text-neutral-300">
           Building resilient systems and empowering developers through thoughtful engineering.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
-          <Link
-            href={{ pathname: "/recruiter" }}
-            className="glass-card glass-hover inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-slate-100 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/25"
-          >
-            For Recruiters
-            <ArrowRight className="h-4 w-4" />
+          <Link href={{ pathname: "/recruiter" }}>
+            <Button variant="primary" size="md">
+              For Recruiters
+              <ArrowRight className="h-4 w-4" />
+            </Button>
           </Link>
-          <Link
-            href={{ pathname: "/engineer" }}
-            className="inline-flex items-center gap-2 rounded-full border border-slate-500/30 px-6 py-3 text-sm font-semibold text-slate-100 transition-all duration-300 hover:border-slate-400 hover:bg-slate-700/20"
-          >
-            For Engineers
+          <Link href={{ pathname: "/engineer" }}>
+            <Button variant="secondary" size="md">
+              For Engineers
+              <ArrowRight className="h-4 w-4" />
+            </Button>
           </Link>
         </div>
       </section>
@@ -53,48 +57,50 @@ export default function HomePage() {
       <section className="mx-auto max-w-4xl px-4 pb-16">
         <div className="grid gap-8 md:grid-cols-2">
           {modes.map(({ title, description, href, icon: Icon }) => (
-            <Link
-              key={title}
-              href={{ pathname: href }}
-              className="glass-card glass-hover group overflow-hidden rounded-3xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10"
-            >
-              <div className="flex flex-col gap-4">
-                <Icon className="h-8 w-8 text-blue-400" />
-                <h2 className="text-2xl font-semibold text-slate-100">{title}</h2>
-                <p className="text-slate-300">{description}</p>
-                <div className="inline-flex items-center gap-2 text-sm font-medium text-blue-300 group-hover:text-blue-200">
-                  Explore
-                  <ArrowRight className="h-4 w-4" />
+            <Link key={title} href={{ pathname: href }}>
+              <CardSpotlight className="group relative overflow-hidden p-8 transition-all duration-500 hover:-translate-y-1" radius={400} color="#0a0a0a">
+                <BorderBeam size={200} duration={12} delay={0} colorFrom="#ffffff" colorTo="#737373" />
+                <div className="relative z-20 flex flex-col gap-4">
+                  <Icon className="h-8 w-8 text-white" />
+                  <h2 className="text-2xl font-semibold text-white">{title}</h2>
+                  <p className="text-neutral-400">{description}</p>
+                  <div className="inline-flex items-center gap-2 text-sm font-medium text-neutral-300 group-hover:text-white transition-colors">
+                    Explore
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
                 </div>
-              </div>
+              </CardSpotlight>
             </Link>
           ))}
         </div>
       </section>
 
       <section className="mx-auto max-w-4xl px-4 pb-24 text-center">
-        <div className="glass-card rounded-3xl p-12">
-          <h2 className="text-4xl font-semibold text-slate-100">Let&apos;s build something together</h2>
-          <p className="mt-4 text-xl text-slate-300">
-            I&apos;m always open to discussing new opportunities and interesting projects.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link
-              href={{ pathname: "/community" }}
-              className="glass-hover inline-flex items-center gap-2 rounded-full border border-blue-500/50 bg-blue-500/20 px-6 py-3 text-sm font-semibold text-slate-100 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/25"
-            >
-              Join Community
-              <Users className="h-4 w-4" />
-            </Link>
-            <a
-              href="mailto:work@devanshdubey.com"
-              className="inline-flex items-center gap-2 rounded-full border border-slate-500/30 px-6 py-3 text-sm font-semibold text-slate-100 transition-all duration-300 hover:border-slate-400 hover:bg-slate-700/20"
-            >
-              Get in touch
-            </a>
+        <CardSpotlight className="relative overflow-hidden p-12" radius={500} color="#0a0a0a">
+          <BorderBeam size={250} duration={15} delay={0} colorFrom="#ffffff" colorTo="#525252" />
+          <div className="relative z-20">
+            <h2 className="text-4xl font-semibold text-white">Let&apos;s build something together</h2>
+            <p className="mt-4 text-xl text-neutral-300">
+              I&apos;m always open to discussing new opportunities and interesting projects.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <Link href={{ pathname: "/community" }}>
+                <Button variant="primary" size="md">
+                  Join Community
+                  <Users className="h-4 w-4" />
+                </Button>
+              </Link>
+              <a href="mailto:work@devanshdubey.com">
+                <Button variant="secondary" size="md">
+                  Get in touch
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </a>
+            </div>
           </div>
-        </div>
+        </CardSpotlight>
       </section>
     </div>
+    </IntroScreen>
   );
 }
