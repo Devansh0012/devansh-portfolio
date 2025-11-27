@@ -1,0 +1,854 @@
+---
+title: "Building an AI-Powered Document Schema Builder with Real-Time Validation"
+description: "How I built an intelligent document processing system that uses AI to automatically discover document types, extract structured data with OCR, and validate schemas before deployment - featuring a novel Test Document workflow."
+date: "2025-11-27"
+category: "Tech Deep Dives"
+tags:
+  - ai
+  - ocr
+  - document-processing
+  - real-time
+  - react
+  - typescript
+  - fastify
+heroQuote: "The best validation happens before you ship to production"
+---
+
+## Introduction
+
+Imagine uploading a batch of invoices, purchase orders, and shipping documents - and having an AI automatically understand what each document is, extract all the important fields, and create reusable schemas for future processing. That's exactly what I built with the Document Schema Builder.
+
+But here's the unique part: before publishing any schema, users can test it against the original documents to verify that new fields can be extracted correctly. This "Test Document" feature bridges the gap between schema definition and validation, eliminating the guesswork in document processing workflows.
+
+In this post, I'll walk through the architecture, key challenges, and the innovative solutions that make this system work.
+
+## The Problem
+
+Traditional document processing systems require manual schema definition upfront. You need to:
+- Know all the fields in advance
+- Manually define field types and structures
+- Set up extraction rules without validation
+- Hope everything works when you deploy
+
+This is slow, error-prone, and requires multiple iterations to get right. I wanted to build something smarter.
+
+## System Overview
+
+The Document Schema Builder is a full-stack intelligent document processing system with three core capabilities:
+
+1. **AI-Powered Discovery**: Upload documents and let Gemini LLM automatically identify document types
+2. **Interactive Schema Editor**: Visual canvas with OCR overlay for precise field mapping
+3. **Test-Before-Publish**: Validate schema changes against original documents with real-time feedback
+
+**Key Statistics**:
+- Processes up to 30 pages in a single batch
+- Supports 27 pre-configured document templates
+- 31 REST API endpoints
+- Real-time updates via WebSocket
+- ~4,200 lines of backend code
+- ~2,200 lines of frontend code
+
+## Architecture Deep Dive
+
+### High-Level Flow
+
+```
+User Upload (Batch) → Backend Processing → Schema Discovery →
+Interactive Editor → Test Document → Publish
+```
+
+The system uses a **3-phase architecture**:
+
+### Phase 1: Upload & AI Discovery
+
+**The Challenge**: Process multiple files efficiently while automatically understanding document structure.
+
+**The Solution**: True batch processing with a single OCR and AI call.
+
+```typescript
+// Discovery pipeline
+async discoverFromBatch(files: FileWithBuffer[]): Promise<DiscoveredSchemaDocument[]> {
+  // 1. Extract images from PDFs using pdftoppm
+  const pageImages = await extractAllPageImages(files);
+
+  // 2. Validate 30-page limit across all files
+  if (pageImages.length > 30) throw new Error('Batch too large');
+
+  // 3. Run OCR on ALL pages together (Google Document AI)
+  const ocrResults = await documentAI.batchProcessDocuments(pageImages);
+
+  // 4. Format OCR response with block structure
+  const formattedOCR = formatOCRBlocks(ocrResults);
+
+  // 5. Call Gemini LLM with discovery prompt
+  const discoveredSchemas = await gemini.discoverSchemas(formattedOCR);
+
+  // 6. Return schemas with instances
+  return discoveredSchemas;
+}
+```
+
+**Key Design Decision**: Instead of processing each file separately, I batch everything into a single OCR call and a single AI call. This:
+- Reduces API costs significantly
+- Allows the AI to see all documents together for better type discovery
+- Processes faster than sequential operations
+
+**Discovery Output Example**:
+
+```javascript
+[
+  {
+    "documentType": "Invoice",
+    "instances": [
+      {
+        "structure": {
+          "labels": {
+            "invoice_number": {
+              "value": "INV-001",
+              "pageNumber": 1,
+              "wordIds": ["113-121", "126-128"]
+            },
+            "total_amount": {
+              "value": "1000",
+              "pageNumber": 1,
+              "wordIds": ["133-140"]
+            }
+          },
+          "tables": {
+            "line_items": {
+              "headers": {
+                "description": { /* ... */ },
+                "amount": { /* ... */ }
+              },
+              "rows": { /* ... */ }
+            }
+          }
+        }
+      }
+    ]
+  }
+]
+```
+
+Notice the `wordIds`? These are critical for the Test Document feature - more on that later.
+
+### Phase 2: Smart Schema Merging
+
+**The Challenge**: When processing multiple invoices together, they might have different fields. Some might have a "PO Number", others might not.
+
+**The Solution**: Create a unified schema that's the **union of all fields** from all instances.
+
+```typescript
+function mergeSchemaStructures(instances: any[]): {
+  labels: Record<string, any>
+  tables: Record<string, any>
+} {
+  // Takes ALL fields from ALL instances
+  // Creates mega-schema with complete structure
+
+  const mergedLabels = {};
+  const mergedTables = {};
+
+  for (const instance of instances) {
+    // Union operation - add any new fields
+    Object.assign(mergedLabels, instance.labels);
+    Object.assign(mergedTables, instance.tables);
+  }
+
+  return { labels: mergedLabels, tables: mergedTables };
+}
+```
+
+For extracted values, I select the "main instance" (the most complete one) to populate the schema. This ensures users see actual data, not just field definitions.
+
+### Phase 3: Interactive Visual Editor
+
+The frontend is built with React + Konva.js for canvas rendering:
+
+**Key Components**:
+- **DocumentViewer**: Canvas with OCR text overlay and interactive bounding boxes
+- **LabelsPanel**: Right sidebar for editing schema fields and values
+- **PagesPreview**: Left sidebar with page thumbnails for navigation
+- **SchemaBuilderHeader**: Top bar with publish, revert, and test actions
+
+**State Management with Zustand** (1,752 lines):
+
+```typescript
+interface DocumentReviewStore {
+  // Document data
+  documentData: DocumentData | null
+  ocrData: BatchOcrDataResponse | null
+  schemaId: string
+
+  // Canvas states per page
+  pageStates: Record<string, PageState>
+
+  // Actions
+  addNewLabelSchema: (params) => void
+  updateLabelContent: (params) => void
+  deleteSchemaLabel: (params) => void
+
+  // Canvas interactions
+  startDrawing: (pageId, pos) => void
+  updateDrawing: (pageId, pos) => void
+  finishDrawing: (pageId) => void
+  startResize: (pageId, labelId, corner, pos) => void
+  // ... more actions
+}
+```
+
+Each page maintains its own state for zoom, pan, and interaction modes. This allows smooth navigation between multi-page documents.
+
+**Canvas Interactions**:
+
+```typescript
+// Drawing new bounding box
+onMouseDown → startDrawing()
+onMouseMove → updateDrawing()
+onMouseUp → finishDrawing() → extractTextFromArea()
+
+// Resizing existing box
+onCornerMouseDown → startResize()
+onMouseMove → updateResize()
+onMouseUp → finishResize() → updateCoordinatesById()
+```
+
+All coordinate changes are immediately persisted to the backend via API calls.
+
+## The Innovation: Test Document Feature
+
+This is where things get really interesting. The problem I wanted to solve:
+
+**How do you know if a new field you added to a schema can actually be extracted by the AI before you publish it to production?**
+
+Traditional approach: Publish and hope for the best. If it fails, rollback and try again.
+
+My approach: **Test it first**.
+
+### How It Works
+
+When a user clicks "Test Document", here's what happens:
+
+```typescript
+async testSchema(
+  schemaId: string,
+  projectId: ProjectId,
+  socket: Socket,
+  log: FastifyBaseLogger
+): Promise<{ success: boolean; message: string }> {
+  // 1. Retrieve draft schema and original document instance
+  const draftSchema = await this.getById(schemaId, projectId, 'draft');
+  const documentInstance = await getDocumentInstance(draftSchema.documentInstanceId);
+
+  // 2. Fetch stored OCR data and page images
+  const ocrData = await getOCRData(documentInstance.id);
+  const pageImages = await getPageImages(documentInstance.id);
+
+  // 3. Build wordId-to-bounding-box map from OCR data
+  const wordMap = buildWordIdToBboxMapFromFormatted(ocrData);
+
+  // 4. Create pageNumber→instancePageId mapping
+  const pageMapping = createPageMapping(documentInstance);
+
+  // 5. Call AI service with updated schema
+  const aiResults = await gemini.extractWithSchema(draftSchema, pageImages);
+
+  // 6. Update extracted labels with new values and coordinates
+  for (const [labelKey, extraction] of Object.entries(aiResults.labels)) {
+    // Calculate bounding box from AI-returned wordIds
+    const bbox = calculateBoundingBoxFromWordIds(
+      extraction.wordIds,
+      wordMap,
+      log
+    );
+
+    // Update database
+    await updateExtractedLabel(labelKey, {
+      text: extraction.value,
+      coordinates: bbox,
+      instancePageId: pageMapping[extraction.pageNumber]
+    });
+  }
+
+  // 7. Do the same for tables
+  for (const [tableName, table] of Object.entries(aiResults.tables)) {
+    for (const [rowId, row] of Object.entries(table.rows)) {
+      for (const [cellKey, cell] of Object.entries(row.cells)) {
+        const bbox = calculateBoundingBoxFromWordIds(cell.wordIds, wordMap, log);
+        await updateExtractedCell(rowId, cellKey, {
+          text: cell.value,
+          coordinates: bbox
+        });
+      }
+    }
+  }
+
+  // 8. Emit SCHEMA_TEST_COMPLETED socket event
+  await notifySchemaTestCompleted({
+    socket,
+    projectId,
+    schemaId,
+    success: true,
+    message: 'Test completed successfully'
+  });
+
+  return { success: true, message: 'Extraction validated' };
+}
+```
+
+### The Magic: Coordinate Calculation
+
+The AI doesn't return exact pixel coordinates. It returns **wordIds** - references to words in the OCR output. Here's how I convert those to bounding boxes:
+
+```typescript
+function calculateBoundingBoxFromWordIds(
+  wordIds: string[] | undefined,
+  wordMap: Map<string, BBox>,
+  log: Logger
+): BBox | null {
+  if (!wordIds?.length) return null;
+
+  const foundBoxes: BBox[] = [];
+
+  for (const wordId of wordIds) {
+    // Try direct lookup first
+    if (wordMap.has(wordId)) {
+      foundBoxes.push(wordMap.get(wordId));
+      continue;
+    }
+
+    // Handle range IDs like "357-380"
+    const [start, end] = wordId.split('-').map(Number);
+    if (start && end) {
+      // Find all wordIds that overlap with this range
+      for (const [mapWordId, bbox] of wordMap.entries()) {
+        const [mapStart, mapEnd] = mapWordId.split('-').map(Number);
+        if (rangesOverlap(start, end, mapStart, mapEnd)) {
+          foundBoxes.push(bbox);
+        }
+      }
+    }
+  }
+
+  if (foundBoxes.length === 0) return null;
+
+  // Calculate minimum enclosing rectangle
+  const xMin = Math.min(...foundBoxes.map(b => b.xMin));
+  const yMin = Math.min(...foundBoxes.map(b => b.yMin));
+  const xMax = Math.max(...foundBoxes.map(b => b.xMax));
+  const yMax = Math.max(...foundBoxes.map(b => b.yMax));
+
+  return { xMin, yMin, xMax, yMax };
+}
+```
+
+This approach is **robust to OCR variations** - even if the AI returns slightly different wordId ranges than the original extraction, we can still calculate accurate coordinates.
+
+### Real-Time Feedback
+
+The test runs asynchronously, but users get immediate feedback via WebSocket:
+
+```typescript
+// Frontend
+socket.on(WebsocketClientEvent.SCHEMA_TEST_COMPLETED, (data) => {
+  if (data.schemaId === currentSchemaId) {
+    // Show notification
+    toast({
+      title: data.success ? 'Test Completed' : 'Test Failed',
+      description: data.message,
+    });
+
+    // Automatically refresh data
+    if (data.success) {
+      refetchSchemaData();
+    }
+  }
+});
+```
+
+No polling, no page reloads. Just instant updates when the test completes.
+
+## Database Design
+
+The system uses a **hierarchical schema structure**:
+
+```
+document_schema (parent)
+├── document_schema_labels (child - 1:N)
+├── document_schema_tables (child - 1:N)
+│   └── document_schema_table_headers (child - 1:N)
+```
+
+**Key Innovation**: The `fieldType` column enables draft/published workflow:
+
+```typescript
+type FieldVersionType = 'draft' | 'published';
+
+// Same label can exist in both versions
+{
+  id: 'label-123',
+  name: 'Invoice Number',
+  key: 'invoice_number',
+  fieldType: 'draft',  // or 'published'
+  documentSchemaId: 'schema-456'
+}
+```
+
+When you publish, the system:
+1. Deletes all old `fieldType='published'` fields
+2. Promotes all `fieldType='draft'` fields to `'published'`
+3. Returns success
+
+**Extracted Data Schema**:
+
+```
+extracted_labels
+├── labelKey: string
+├── text: string (extracted value)
+├── coordinatesId: FK → coordinates
+├── instancePageId: FK → instance_page
+
+coordinates
+├── xMin, yMin, xMax, yMax: float
+```
+
+The `instance_page` table maps page numbers to specific document instances, ensuring labels appear on the correct pages even across multiple documents.
+
+**Strategic Indices**:
+- `idx_document_schema_name_project`: UNIQUE(name, projectId) - prevent duplicate schemas
+- `idx_extracted_labels_instance`: (documentInstanceId, labelKey) - fast label lookups
+- `idx_coordinates`: (id) - coordinate retrieval
+
+## API Design
+
+I designed the API with **flexibility and efficiency** in mind:
+
+**Paginated Listing**:
+```typescript
+GET /v1/document/schemas/paginated?cursor=abc&limit=10&published=true
+
+Response: {
+  data: DocumentSchema[],
+  next: 'cursor-xyz',
+  previous: 'cursor-def'
+}
+```
+
+**Batch Uploads**:
+```typescript
+POST /v1/document/schemas/batch-upload
+Content-Type: multipart/form-data
+
+{
+  file-0-invoice.pdf: File,
+  file-1-po.pdf: File,
+  projectId: 'proj-123',
+  length: 2
+}
+```
+
+**Test Endpoint**:
+```typescript
+POST /v1/document/schemas/:id/test
+
+Response: {
+  success: true,
+  message: 'Test completed successfully'
+}
+```
+
+The test endpoint returns immediately while processing happens asynchronously.
+
+**Draft Management**:
+```typescript
+// Create draft from published
+POST /v1/document/schemas/:id/draft
+
+// Modify draft
+POST /v1/document/schemas/:id/draft/label
+PATCH /v1/document/schemas/:id/draft/label/:labelKey
+DELETE /v1/document/schemas/:id/draft/label/:labelKey
+
+// Publish changes
+POST /v1/document/schemas/:id/publish
+
+// Discard changes
+POST /v1/document/schemas/:id/revert
+```
+
+## Performance Optimizations
+
+### 1. Cursor-Based Pagination
+
+Instead of offset pagination, I use cursor-based:
+
+```typescript
+async listPaginated(params: {
+  cursor?: string,
+  limit: number,
+  orderBy: string,
+  order: 'ASC' | 'DESC'
+}): Promise<SeekPage<DocumentSchema>> {
+  const query = this.createQueryBuilder('schema')
+    .where('schema.projectId = :projectId', { projectId })
+    .orderBy(`schema.${orderBy}`, order)
+    .limit(limit + 1);  // Fetch one extra to determine if there's a next page
+
+  if (cursor) {
+    query.andWhere(`schema.${orderBy} > :cursor`, { cursor });
+  }
+
+  const results = await query.getMany();
+  const hasMore = results.length > limit;
+
+  if (hasMore) results.pop();  // Remove the extra item
+
+  return {
+    data: results,
+    next: hasMore ? results[results.length - 1][orderBy] : null,
+    previous: cursor
+  };
+}
+```
+
+This scales to millions of records without performance degradation.
+
+### 2. Lazy Loading OCR Data
+
+OCR data is **large** (formatted blocks for every word). I store it separately and fetch only when needed:
+
+```typescript
+// Schema retrieval doesn't include OCR
+GET /v1/document/schemas/:id → { schema, labels, tables }
+
+// OCR fetched separately when canvas loads
+GET /v1/document/schemas/:id/ocr-data → { [pageId]: { blocks, width, height } }
+```
+
+This keeps the main API fast while allowing the canvas to load OCR on demand.
+
+### 3. React Query Caching
+
+```typescript
+const { data: ocrData } = useQuery({
+  queryKey: ['ocr-schema-data', batchId],
+  queryFn: () => documentTypesApi.fetchOcrData(batchId),
+  staleTime: 5 * 60 * 1000,  // 5 minutes
+  cacheTime: 10 * 60 * 1000  // 10 minutes
+});
+```
+
+OCR data rarely changes, so aggressive caching makes navigation between pages instant.
+
+### 4. Debounced Coordinate Updates
+
+```typescript
+const debouncedUpdateCoordinates = useMemo(
+  () => debounce((coordinateId, coordinates) => {
+    documentTypesApi.updateCoordinatesById(coordinateId, coordinates);
+  }, 500),
+  []
+);
+```
+
+When dragging bounding boxes, updates are debounced to avoid flooding the server.
+
+## Challenges & Solutions
+
+### Challenge 1: 30-Page Limit
+
+**Problem**: Google Document AI has processing limits, and large batches cause timeouts.
+
+**Solution**: Enforce a 30-page limit upfront and guide users to split larger batches. This keeps processing under 2 minutes while still being useful.
+
+```typescript
+async validatePageLimit(files: FileWithBuffer[]): Promise<void> {
+  let totalPages = 0;
+
+  for (const file of files) {
+    if (file.mimetype === 'application/pdf') {
+      const pageCount = await countPDFPages(file.buffer);
+      totalPages += pageCount;
+    } else {
+      totalPages += 1;  // Images are single page
+    }
+  }
+
+  if (totalPages > 30) {
+    throw new Error(`Batch has ${totalPages} pages. Maximum is 30.`);
+  }
+}
+```
+
+### Challenge 2: Coordinate Accuracy with WordId Ranges
+
+**Problem**: The AI sometimes returns wordId ranges that don't exactly match the OCR output.
+
+**Solution**: Implement **range overlap detection**:
+
+```typescript
+function rangesOverlap(
+  start1: number, end1: number,
+  start2: number, end2: number
+): boolean {
+  return start1 <= end2 && start2 <= end1;
+}
+```
+
+This allows flexible matching even when wordIds are approximate.
+
+### Challenge 3: Page Mapping Across Instances
+
+**Problem**: When merging multiple documents, page numbers restart for each document. How do you track which page a label belongs to?
+
+**Solution**: Use an `instance_page` join table:
+
+```typescript
+// Maps logical page numbers to instance-specific page IDs
+instance_page {
+  id: string
+  documentInstanceId: string  // Which document instance
+  pageId: string              // Which OCR page
+}
+
+// Labels reference instance pages, not global pages
+extracted_labels {
+  instancePageId: string  // FK to instance_page
+}
+```
+
+This allows accurate page tracking even across multi-document batches.
+
+### Challenge 4: Real-Time Updates Without Polling
+
+**Problem**: Test Document can take 30+ seconds. Polling is inefficient and adds latency.
+
+**Solution**: WebSocket notifications:
+
+```typescript
+// Backend emits when test completes
+await notifySchemaTestCompleted({
+  socket,
+  projectId,
+  schemaId,
+  success: true,
+  message: 'Test completed successfully'
+});
+
+// Frontend listens and auto-refreshes
+socket.on('SCHEMA_TEST_COMPLETED', (data) => {
+  if (data.success) refetchSchemaData();
+});
+```
+
+Users see results instantly without any manual refresh.
+
+## Lessons Learned
+
+### 1. AI Integration Requires Careful Prompt Engineering
+
+Getting Gemini to return consistent, structured schemas required multiple iterations:
+
+```typescript
+const discoveryPrompt = `
+You are analyzing documents to discover their types and structure.
+
+For each document:
+1. Identify the document type (e.g., "Invoice", "Purchase Order")
+2. Extract all labels (key-value pairs)
+3. Extract all tables with headers and rows
+4. For each extracted value, provide the wordIds from the OCR data
+
+Return JSON with this structure:
+[
+  {
+    "documentType": "Invoice",
+    "instances": [...]
+  }
+]
+
+Rules:
+- Use lowercase_with_underscores for keys
+- Include page numbers for all extractions
+- Provide wordIds for coordinate calculation
+- Group similar documents together
+`;
+```
+
+The prompt evolved significantly as I discovered edge cases.
+
+### 2. Coordinate Calculation Is Harder Than It Looks
+
+My first implementation just took the first wordId's bounding box. This failed when:
+- The value spanned multiple lines
+- The AI returned approximate ranges
+- OCR word segmentation varied
+
+The solution was to:
+1. Build a complete wordId→bbox map from OCR
+2. Handle range overlaps gracefully
+3. Calculate the **minimum enclosing rectangle** of all matched words
+
+### 3. Draft/Published Workflow Prevents Production Incidents
+
+Before adding this feature, schema changes went live immediately. This caused:
+- Accidentally breaking production workflows
+- No way to validate changes before deployment
+- Difficult rollbacks when things went wrong
+
+The two-phase workflow solved all of these issues.
+
+### 4. WebSockets Are Essential for Long-Running Operations
+
+Initially, I had the frontend poll for test results every 2 seconds. This:
+- Added unnecessary server load
+- Introduced 2-second latency in the best case
+- Felt sluggish to users
+
+Switching to WebSockets made the experience feel instant and eliminated polling overhead.
+
+### 5. Database Indexing Matters at Scale
+
+Early on, queries for large projects were slow. Adding proper indices:
+
+```sql
+CREATE INDEX idx_document_schema_name_project
+  ON document_schema(name, project_id);
+
+CREATE INDEX idx_extracted_labels_instance
+  ON extracted_labels(document_instance_id, label_key);
+```
+
+Reduced query times from seconds to milliseconds.
+
+## Future Enhancements
+
+### 1. Transaction Safety
+
+Currently, publishing isn't atomic. If it fails halfway through, you can end up with partially published schemas. The fix:
+
+```typescript
+await dataSource.transaction(async (manager) => {
+  // Delete old published fields
+  await manager.delete(DocumentLabelEntity, {
+    documentSchemaId: schemaId,
+    fieldType: 'published'
+  });
+
+  // Promote draft to published
+  await manager.update(DocumentLabelEntity, {
+    documentSchemaId: schemaId,
+    fieldType: 'draft'
+  }, {
+    fieldType: 'published'
+  });
+});
+```
+
+### 2. Schema Versioning
+
+Track historical changes:
+
+```typescript
+document_schema_version {
+  id: string
+  documentSchemaId: string
+  version: number
+  snapshot: jsonb  // Full schema at this version
+  publishedBy: string
+  publishedAt: timestamp
+}
+```
+
+This would enable:
+- Rollback to any previous version
+- Audit trail of all changes
+- Diff view between versions
+
+### 3. Confidence Scores
+
+The AI can return confidence scores for extractions. Surfacing these would help users identify fields that need manual review:
+
+```typescript
+{
+  "invoice_number": {
+    "value": "INV-001",
+    "confidence": 0.95,  // High confidence
+    "pageNumber": 1,
+    "wordIds": ["113-121"]
+  },
+  "po_number": {
+    "value": "PO-XYZ",
+    "confidence": 0.62,  // Low confidence - needs review
+    "pageNumber": 1,
+    "wordIds": ["145-150"]
+  }
+}
+```
+
+### 4. Collaborative Editing
+
+Add locking to prevent concurrent edits:
+
+```typescript
+document_schema_lock {
+  schemaId: string
+  lockedBy: string
+  lockedAt: timestamp
+  expiresAt: timestamp
+}
+```
+
+When Alice is editing a schema, Bob sees a read-only view with a banner: "This schema is currently being edited by Alice."
+
+### 5. Batch Testing
+
+Allow testing multiple schemas at once:
+
+```typescript
+POST /v1/document/schemas/batch-test
+{
+  schemaIds: ['schema-1', 'schema-2', 'schema-3']
+}
+```
+
+Useful when making changes to related schemas together.
+
+## Technical Metrics
+
+**Backend Performance**:
+- Average upload processing: 45-90 seconds for 30 pages
+- Schema retrieval: &lt;100ms
+- Test Document: 20-40 seconds depending on page count
+- Publish operation: &lt;500ms
+
+**Frontend Performance**:
+- Canvas render: 60 FPS even with 100+ bounding boxes
+- OCR overlay: Uses virtualization for large documents
+- State updates: Optimistic UI with automatic rollback on errors
+
+**Code Quality**:
+- TypeScript strict mode enabled
+- 100% type coverage
+- Shared types between frontend and backend (`@docxster/shared`)
+- Comprehensive error handling
+
+## Conclusion
+
+Building the Document Schema Builder taught me that **the best validation happens before you ship to production**. The Test Document feature embodies this principle - it lets users verify their schemas against real documents before committing changes.
+
+Key takeaways:
+
+1. **AI integration requires thoughtful design**: Prompt engineering, structured outputs, and error handling are critical
+2. **Real-time feedback matters**: WebSockets eliminate the waiting game and make UX feel instant
+3. **Coordinate-based extraction is powerful**: Storing bounding boxes enables visual validation and correction
+4. **Draft/published workflows prevent incidents**: Separate experimentation from production
+5. **Batch processing is more efficient**: Single API calls for multiple items reduce overhead
+
+The system now processes hundreds of documents daily, automatically creating schemas that would have taken hours to define manually. And with the Test Document feature, users can confidently publish schemas knowing they'll work correctly.
+
+If you're building a document processing system, I hope these patterns and lessons save you from some of the mistakes I made along the way.
+
+---
+
+*Want to learn more about AI-powered document processing or the Docxster platform? Feel free to reach out.*

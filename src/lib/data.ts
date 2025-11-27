@@ -111,6 +111,30 @@ export const experiences: Experience[] = [
 
 export const projects: Project[] = [
   {
+    title: "Document Schema Builder",
+    description:
+      "AI-powered document processing system that automatically discovers document types, extracts structured data with OCR, and validates schemas before deployment.",
+    tech: ["TypeScript", "Fastify", "React", "Gemini AI", "Google Document AI", "Meilisearch"],
+    link: "/blog/document-schema-builder",
+    highlight: "Processes 30 pages in single batch with intelligent schema merging. Features innovative Test Document workflow for validating field extraction before publishing.",
+  },
+  {
+    title: "Docxster Drive",
+    description:
+      "Enterprise-grade cloud storage platform with advanced file management, OCR processing, full-text search, and real-time collaboration capabilities.",
+    tech: ["TypeScript", "Fastify", "React", "PostgreSQL", "AWS S3", "Meilisearch", "Socket.IO"],
+    link: "/blog/docxster-drive-architecture",
+    highlight: "Handles 10k+ requests/day with 3-step upload process, automatic OCR indexing, and coordinate-based document annotation. Reduced storage costs by 45% with smart deduplication.",
+  },
+  {
+    title: "File Compressor",
+    description:
+      "Multi-format compression tool supporting images, videos, audio, and PDFs with quality-based, size-based, and percentage reduction strategies.",
+    tech: ["Python", "FastAPI", "React", "TypeScript", "FFmpeg", "Tailwind"],
+    link: "https://github.com/Devansh0012/file-compressor",
+    highlight: "Drag-and-drop interface with real-time processing feedback. Handles files up to 500MB with automatic cleanup and comprehensive file validation.",
+  },
+  {
     title: "Violence Detection System",
     description:
       "Developed a system to detect physical violence and alert authorities.",

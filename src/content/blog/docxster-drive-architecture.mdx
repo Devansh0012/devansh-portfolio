@@ -1,0 +1,487 @@
+---
+title: "Building Docxster Drive: Enterprise File Management at Scale"
+description: "A deep dive into the architecture, implementation, and design decisions behind Docxster Drive - an enterprise-grade file storage and management system with OCR, full-text search, and real-time collaboration."
+date: "2025-11-27"
+category: "Tech Deep Dives"
+tags:
+  - distributed-systems
+  - architecture
+  - storage
+  - search
+  - ocr
+  - typescript
+heroQuote: "Great systems are built from simple, composable pieces"
+---
+
+## Introduction
+
+Docxster Drive is an enterprise-grade file storage and management system I built as a core component of the Docxster platform. It's designed to handle document-heavy workflows with features like OCR processing, full-text search, version control, and real-time collaboration - all while maintaining the performance and reliability expected from modern cloud applications.
+
+In this post, I'll walk through the architecture decisions, implementation challenges, and lessons learned while building a system that handles file uploads, downloads, search, and collaboration for thousands of concurrent users.
+
+## System Overview
+
+At its core, Docxster Drive is a multi-layered system consisting of:
+
+- **Piece Layer**: A pluggable integration interface using the Docxster Pieces Framework
+- **API Layer**: RESTful APIs built with Fastify and TypeScript
+- **Storage Layer**: AWS S3 for object storage with signed URLs
+- **Search Layer**: Meilisearch for full-text search across files and metadata
+- **Processing Layer**: Background workers for OCR, thumbnail generation, and indexing
+- **Database Layer**: PostgreSQL with TypeORM for relational data
+
+The system supports hierarchical folder structures, soft deletes, bulk operations, and event-driven automation workflows.
+
+## Architecture Components
+
+### 1. The Piece Layer: Modular Integration
+
+The piece layer provides a clean, action-based interface for interacting with the drive:
+
+```typescript
+export const docxsterDrive = createPiece({
+  displayName: "Docxster Drive",
+  auth: PieceAuth.None(),
+  logoUrl: "https://cdn.docxster.ai/pieces/docxster-drive.svg",
+  actions: [createfolder, uploadfile, deletefile, getfile],
+  triggers: [fileupload],
+})
+```
+
+**Key Actions:**
+- **Create Folder**: Hierarchical folder creation with metadata support
+- **Upload File**: 3-step upload process with S3 integration
+- **Get File**: Retrieves signed URLs for immediate download
+- **Delete File**: Soft delete with permanent deletion option
+
+**Triggers:**
+- **File Upload Webhook**: Event-based notifications when files are uploaded
+
+This modular design allows the drive to be easily integrated into automation workflows and third-party applications.
+
+### 2. The 3-Step Upload Process
+
+One of the most interesting challenges was designing a reliable file upload system that could handle large files while maintaining data integrity. I implemented a 3-step process:
+
+#### Step 1: Initiate Upload
+```typescript
+POST /v1/drive/items
+{
+  operation: "upload_file",
+  name: "document.pdf",
+  size: 5242880,
+  mimeType: "application/pdf",
+  checksum: "md5-hash-here",
+  parentId: "folder-id"
+}
+```
+
+The server:
+- Validates storage quotas and constraints
+- Creates a pending `DriveItem` with `PENDING_UPLOAD` status
+- Generates a 15-minute presigned S3 URL with Content-MD5 validation
+- Returns the upload session
+
+#### Step 2: Direct Upload to S3
+The client uploads directly to the presigned S3 URL, bypassing the application server entirely. This approach:
+- Reduces server load
+- Improves upload speed
+- Leverages S3's reliability and bandwidth
+
+#### Step 3: Confirm Upload
+```typescript
+POST /v1/drive/items/confirm-upload
+{
+  fileId: "item-id",
+  checksum: "md5-hash-here"
+}
+```
+
+The server:
+- Verifies the file exists in S3
+- Validates the checksum matches
+- Updates the item to `UPLOAD_CONFIRMED`
+- Triggers background processing (OCR, thumbnail, indexing)
+- Emits file upload events for workflows
+
+This pattern ensures data integrity while maximizing upload performance.
+
+### 3. Database Design: Hierarchical Storage
+
+The core entity is `DriveItem`, which represents both files and folders:
+
+```typescript
+{
+  id: string
+  resourceType: 'FILE' | 'FOLDER'
+  name: string
+  parentId: string | null
+  path: string | null              // ID-based: "root.folder1.folder2"
+  materializedPath: string | null  // Human-readable: "/Documents/Projects"
+  projectId: string
+  ownerId: string
+  mimeType: string | null
+  size: number
+  storageKey: string | null        // S3 key
+  checksum: string | null          // MD5 for integrity
+  isDeleted: boolean
+  isStarred: boolean
+  metadata: Record<string, unknown> // Flexible JSONB
+  thumbnailUrl: string | null
+}
+```
+
+**Key Design Decisions:**
+
+**Dual Path Storage**: I store both ID-based paths (`root.folder1.folder2`) and human-readable paths (`/Documents/Projects`). This allows:
+- Fast hierarchical queries using the ID-based path
+- User-friendly breadcrumb navigation
+- Efficient parent-child relationship lookups
+
+**Self-Referential Relationships**: Folders can contain other folders, creating a tree structure. TypeORM's self-referential relations make this elegant:
+```typescript
+@ManyToOne(() => DriveItemEntity, item => item.children)
+parent: DriveItemEntity
+
+@OneToMany(() => DriveItemEntity, item => item.parent)
+children: DriveItemEntity[]
+```
+
+**Strategic Indices**: Performance is critical, so I added several indices:
+- `idx_drive_item_parent_project`: Fast parent lookups within a project
+- `idx_drive_item_project_deleted`: Efficient queries for active items
+- `idx_drive_item_name_parent`: UNIQUE constraint preventing duplicate names in the same folder
+- `idx_drive_item_path`: Hierarchical path queries
+
+### 4. Full-Text Search with Meilisearch
+
+Search is a critical feature for document management. I integrated Meilisearch for lightning-fast full-text search across:
+
+- File names
+- OCR-extracted text from PDFs and images
+- Owner information
+- Folder paths
+
+**Index Configuration:**
+```typescript
+{
+  searchableAttributes: ['name', 'content', 'ownerName', 'ownerEmail', 'path'],
+  filterableAttributes: ['projectId', 'resourceType', 'isDeleted', 'isStarred'],
+  rankingRules: ['words', 'typo', 'proximity', 'attribute', 'sort', 'exactness']
+}
+```
+
+The ranking rules ensure relevant results appear first, with typo tolerance and proximity matching.
+
+**Search Query Example:**
+```typescript
+GET /v1/drive/items/search?q=contract&filter=resourceType=FILE
+```
+
+This searches across all indexed content and returns results in milliseconds, even with thousands of documents.
+
+### 5. Background Processing Pipeline
+
+Large files and compute-intensive operations are handled asynchronously by background workers:
+
+#### OCR Worker
+```typescript
+Input: { driveItemId, storageKey, mimeType }
+Process:
+1. Download file from S3
+2. Send to Google Document AI for text extraction
+3. Store extracted text in metadata
+4. Update status to READY
+5. Index content in Meilisearch
+```
+
+Supports: PDF, PNG, JPEG, GIF, TIFF, WEBP, BMP
+
+#### Thumbnail Worker
+```typescript
+Input: { driveItemId, storageKey, mimeType }
+Process:
+1. Generate thumbnail from image/video/PDF
+2. Upload to S3 under thumbnail/{storageKey}
+3. Mark as generated in metadata
+```
+
+#### Download Worker
+```typescript
+Input: { folderId, projectId, jobId }
+Process:
+1. Recursively fetch all items in folder
+2. Create ZIP file maintaining hierarchy
+3. Upload ZIP to S3
+4. Emit progress via Socket.IO
+5. Generate signed download URL
+```
+
+This worker handles bulk downloads of entire folder structures, creating properly organized ZIP files on-demand.
+
+### 6. Event-Driven Architecture
+
+The system emits events for all major operations, enabling automation workflows:
+
+```typescript
+enum DriveEventName {
+  FILE_UPLOADED = 'drive.file.uploaded',
+  FILE_DELETED = 'drive.file.deleted',
+  FILE_RENAMED = 'drive.file.renamed',
+  FILE_MOVED = 'drive.file.moved',
+  FILE_SHARED = 'drive.file.shared',
+  FOLDER_CREATED = 'drive.folder.created',
+}
+```
+
+**Event Flow:**
+1. Operation completes (e.g., file upload)
+2. Side effect triggered
+3. Query listeners for this event type
+4. Create job payloads with event data
+5. Queue jobs for each listener
+6. Execute automation flows
+
+This allows users to build complex document workflows like:
+- Auto-process invoices when uploaded to specific folders
+- Send notifications when files are shared
+- Archive old files to cold storage
+- Extract data from PDFs and populate databases
+
+## Key Features
+
+### Soft Delete with Bin Management
+
+Instead of immediately deleting files, they're moved to a recycle bin:
+
+```typescript
+{
+  isDeleted: true,
+  deletedAt: timestamp,
+  deletedBy: userId
+}
+```
+
+Benefits:
+- Users can recover accidentally deleted files
+- Audit trail for compliance
+- Configurable retention period (default: 30 days)
+- Auto-cleanup cron job runs daily at 2 AM
+
+### Version Control
+
+Every file update creates a new version record:
+
+```typescript
+{
+  versionNumber: 2,
+  storageKey: 's3-key-v2',
+  checksum: 'md5-hash',
+  size: 1048576,
+  createdBy: userId,
+  createdAt: timestamp
+}
+```
+
+This enables:
+- Rolling back to previous versions
+- Audit trails of who changed what
+- Storage optimization through deduplication
+
+### Bulk Operations
+
+The API supports batching multiple operations in a single request:
+
+```typescript
+PATCH /v1/drive/items
+{
+  operations: [
+    { type: 'move', itemIds: [...], targetParentId: '...' },
+    { type: 'delete', itemIds: [...] },
+    { type: 'star', itemIds: [...] }
+  ]
+}
+```
+
+This reduces network round trips and enables atomic-like processing of related changes.
+
+### Smart MIME Type Detection
+
+Files are validated and categorized using binary signature detection:
+
+```typescript
+function detectMimeType(buffer: Buffer): string | null {
+  if (buffer[0] === 0x89 && buffer.toString('ascii', 1, 4) === 'PNG') {
+    return 'image/png'
+  }
+  if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) {
+    return 'image/jpeg'
+  }
+  if (buffer.toString('ascii', 0, 4) === '%PDF') {
+    return 'application/pdf'
+  }
+  // ... more signatures
+}
+```
+
+This prevents malicious file uploads and ensures proper processing based on actual content, not just file extensions.
+
+## Technology Stack
+
+**Backend:**
+- Fastify (TypeScript) - High-performance web framework
+- TypeORM - Type-safe ORM with PostgreSQL
+- PostgreSQL - Relational database with JSONB support
+- AWS S3 - Object storage with presigned URLs
+- Meilisearch - Full-text search engine
+- Google Document AI - OCR and text extraction
+- Socket.IO - Real-time progress updates
+
+**Frontend/Integration:**
+- Docxster Pieces Framework - Modular integration layer
+- TypeScript - Type safety across the stack
+
+## Design Patterns & Best Practices
+
+### 1. Direct-to-S3 Uploads
+By generating presigned URLs, clients upload directly to S3, bypassing the application server. This:
+- Reduces server bandwidth costs
+- Improves upload speed
+- Scales naturally with S3's infrastructure
+
+### 2. Checksum Validation
+MD5 checksums are calculated client-side and validated:
+- On S3 upload (via Content-MD5 header)
+- On upload confirmation (server-side verification)
+- On version creation (deduplication)
+
+This ensures data integrity throughout the upload pipeline.
+
+### 3. Graceful Degradation
+Not all features are always available:
+- OCR processing degrades gracefully if Google Document AI isn't configured
+- Thumbnail generation skips unsupported formats
+- Search falls back to database queries if Meilisearch is unavailable
+
+This makes the system resilient to partial failures.
+
+### 4. Multi-Tenancy
+Data is strictly scoped by `projectId`:
+- All queries filter by project
+- Database indices include `projectId`
+- Storage quotas are per-project
+
+This ensures data isolation in a multi-tenant environment.
+
+### 5. Async Processing with Status Tracking
+Files progress through processing stages:
+```
+PENDING_UPLOAD → UPLOAD_CONFIRMED → PROCESSING_THUMBNAIL →
+PROCESSING_TEXT → PROCESSING_OCR → READY
+```
+
+Users can track progress, and the system can retry failed stages independently.
+
+## Performance Considerations
+
+### Database Optimization
+- Partial indices for sparse columns (e.g., only index non-deleted items)
+- Composite indices for common query patterns
+- JSONB indices for metadata queries
+- Connection pooling with TypeORM
+
+### Search Optimization
+- Async indexing (doesn't block upload confirmation)
+- Incremental updates (only changed fields)
+- Faceted search for aggregations
+- Ranking rules tuned for relevance
+
+### Caching Strategy
+- Signed URLs cached for 15 minutes
+- Thumbnail URLs generated once and stored
+- Owner information lazy-loaded when needed
+- Folder hierarchies computed once per query
+
+## Security Features
+
+### Upload Validation
+- File size limits per project plan
+- MIME type whitelisting
+- Checksum verification
+- Malware scanning integration
+
+### Access Control
+- Project-scoped authorization
+- User-based permissions (VIEWER, EDITOR)
+- Public link generation with passwords
+- Audit trails for all operations
+
+### Data Protection
+- Soft delete with recovery window
+- Audit logs (who deleted what, when)
+- Time-limited signed URLs
+- Checksums for integrity verification
+
+## Challenges & Solutions
+
+### Challenge 1: Handling Large File Uploads
+**Problem**: Large files (>100MB) timing out, consuming server resources.
+
+**Solution**: 3-step upload process with direct-to-S3 uploads. The server only handles metadata, while S3 handles the actual file transfer.
+
+### Challenge 2: Keeping Search in Sync
+**Problem**: Search index getting out of sync with database during high load.
+
+**Solution**: Async indexing with job queue. Failed indexing jobs are retried automatically. Status tracking in metadata allows re-indexing if needed.
+
+### Challenge 3: Folder Download Performance
+**Problem**: Downloading large folder structures was slow and memory-intensive.
+
+**Solution**: Background worker that streams files into a ZIP archive incrementally, with real-time progress updates via Socket.IO.
+
+### Challenge 4: Duplicate File Names
+**Problem**: Users uploading files with the same name to the same folder.
+
+**Solution**: UNIQUE constraint on `(name, parentId, projectId)`. The API returns a clear error, allowing the client to handle it (rename, replace, etc.).
+
+## Lessons Learned
+
+### 1. Design for Observability from Day One
+Adding structured logging, event emission, and status tracking early made debugging and monitoring much easier as the system scaled.
+
+### 2. Embrace Async Processing
+Moving compute-intensive operations (OCR, thumbnails) to background workers improved API response times and made the system more resilient to processing failures.
+
+### 3. Use Presigned URLs Liberally
+Direct-to-S3 uploads and downloads reduced server load significantly. The application server only handles metadata and orchestration.
+
+### 4. Plan for Multi-Tenancy Early
+Adding `projectId` to every entity and query from the start made data isolation natural and prevented many potential security issues.
+
+### 5. Event-Driven Architecture Enables Extensibility
+By emitting events for all major operations, I made it easy to add new features (workflows, webhooks, analytics) without modifying core business logic.
+
+## Future Enhancements
+
+- **Real-time Collaboration**: Live editing of documents with operational transforms
+- **Smart Deduplication**: Content-based deduplication across the entire project
+- **Advanced Permissions**: Fine-grained ACLs with groups and roles
+- **Audit Logs**: Comprehensive audit trail for compliance
+- **AI-Powered Search**: Semantic search using vector embeddings
+- **Mobile SDK**: Native mobile SDKs for iOS and Android
+
+## Conclusion
+
+Building Docxster Drive taught me valuable lessons about distributed systems, storage architecture, and API design. The key takeaways:
+
+- **Simple, composable pieces** are easier to reason about and maintain
+- **Direct integrations** (like S3 presigned URLs) reduce complexity and improve performance
+- **Async processing** makes systems more resilient and responsive
+- **Event-driven architecture** enables extensibility without coupling
+- **Multi-tenancy** must be designed in from the start
+
+The system now handles thousands of file operations daily, providing reliable document management for the Docxster platform. If you're building a similar system, I hope these patterns and lessons help you avoid some of the pitfalls I encountered along the way.
+
+---
+
+*Interested in learning more about distributed systems and storage architecture? Follow me for more deep dives into building scalable systems.*
