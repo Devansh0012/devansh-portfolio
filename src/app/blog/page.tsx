@@ -6,6 +6,7 @@ import { CardSpotlight } from "@/components/ui/card-spotlight";
 import { BorderBeam } from "@/components/ui/border-beam";
 import BlogContent from "@/components/blog/BlogContent";
 import { GravityStarsBackground } from "@/components/animate-ui/components/backgrounds/gravity-stars";
+import { Rss } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -45,7 +46,9 @@ export default async function BlogIndexPage({
               <a
                 href="/rss.xml"
                 className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 font-semibold text-neutral-300 transition hover:bg-white/10"
+                aria-label="Subscribe to RSS feed"
               >
+                <Rss className="h-4 w-4" />
                 Subscribe via RSS
               </a>
             </div>

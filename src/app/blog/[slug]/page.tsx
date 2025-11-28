@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Rss } from "lucide-react";
 import { getAllPosts, getPostBySlug } from "@/lib/blog";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -56,9 +56,19 @@ export default async function BlogPostPage({ params }: { params: Params }) {
     <div className="bg-slate-900 text-slate-100">
       <section className="border-b border-slate-700 bg-slate-800">
         <div className="mx-auto flex max-w-4xl flex-col gap-4 px-4 pb-12 pt-20 md:pt-24">
-          <Link href="/blog" className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-slate-300">
-            <ArrowLeft className="h-4 w-4" /> Back to all posts
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link href="/blog" className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-slate-300">
+              <ArrowLeft className="h-4 w-4" /> Back to all posts
+            </Link>
+            <Link
+              href="/rss.xml"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-600 bg-slate-700/50 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-slate-700"
+              aria-label="Subscribe to RSS feed"
+            >
+              <Rss className="h-3.5 w-3.5" />
+              RSS
+            </Link>
+          </div>
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{post.category}</p>
           <h1 className="text-4xl font-semibold text-slate-100 md:text-5xl">{post.title}</h1>
           <p className="text-sm text-slate-300">{post.description}</p>

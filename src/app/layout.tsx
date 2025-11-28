@@ -76,6 +76,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
+      <head>
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="Devansh Dubey — Engineering Log"
+          href="/rss.xml"
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-black text-white antialiased`}
       >
