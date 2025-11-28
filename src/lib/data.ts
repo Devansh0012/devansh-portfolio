@@ -51,6 +51,15 @@ export type TimelineEntry = {
   tags: string[];
 };
 
+export type Demo = {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  path: string;
+  tech: string[];
+};
+
 export const heroHighlights: Metric[] = [
   { label: "Production Deployments", value: "30+", sublabel: "Ship fast, ship safely" },
   { label: "Hackathon Wins", value: "2", sublabel: "Across national events" },
@@ -227,4 +236,31 @@ export const communityMetrics: Metric[] = [
   { label: "Developer Community Lead", value: "400+", sublabel: "President of Developer Community" },
   { label: "Talks & Workshops", value: "18", sublabel: "Shared lessons in college" },
   { label: "Problem Solving", value: "500+", sublabel: "Across platforms like GeeksforGeeks and LeetCode" },
+];
+
+export const demos: Demo[] = [
+  {
+    id: "sorting-visualizer",
+    title: "Sorting Algorithm Visualizer",
+    description: "Watch sorting algorithms come to life with animated visualizations. Compare Bubble Sort, Quick Sort, and Merge Sort performance.",
+    category: "Algorithms",
+    path: "/demos/sorting",
+    tech: ["React", "TypeScript", "Animation"],
+  },
+  {
+    id: "bst-visualizer",
+    title: "Binary Search Tree Visualizer",
+    description: "Interactive BST operations including insert, delete, and traversals (in-order, pre-order, post-order) with step-by-step visualization.",
+    category: "Data Structures",
+    path: "/demos/bst",
+    tech: ["React", "TypeScript", "SVG"],
+  },
+  {
+    id: "rate-limiter",
+    title: "Rate Limiter Simulator",
+    description: "Understand rate limiting strategies including Token Bucket, Leaky Bucket, and Fixed Window algorithms with real-time visualization.",
+    category: "Systems",
+    path: "/demos/rate-limiter",
+    tech: ["React", "TypeScript", "Systems Design"],
+  },
 ];

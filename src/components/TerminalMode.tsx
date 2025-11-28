@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Terminal as TerminalIcon, Cpu } from "lucide-react";
-import { projects } from "@/lib/data";
+import { projects, demos } from "@/lib/data";
 import Link from "next/link";
 import type { Route } from "next";
 
@@ -73,6 +73,7 @@ const AVAILABLE_COMMANDS = {
   cat: "Read file contents (e.g., cat readme)",
   clear: "Clear terminal history",
   projects: "Display all engineering projects",
+  demos: "View interactive demos and simulations",
   arena: "Navigate to code arena",
   about: "Show information about engineer mode",
   whoami: "Display current user info",
@@ -87,6 +88,17 @@ export default function TerminalMode() {
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [visitorInfo, setVisitorInfo] = useState<{
+    ip: string;
+    browser: string;
+    os: string;
+    device: string;
+    city?: string;
+    region?: string;
+    country?: string;
+    timezone?: string;
+    isp?: string;
+  } | null>(null);
 
   // Auto-scroll to bottom when history updates
   useEffect(() => {
@@ -98,6 +110,76 @@ export default function TerminalMode() {
   // Focus input on mount and when clicking terminal
   useEffect(() => {
     inputRef.current?.focus();
+  }, []);
+
+  // Fetch visitor information
+  useEffect(() => {
+    const fetchVisitorInfo = async () => {
+      try {
+        // Get user agent info
+        const ua = navigator.userAgent;
+
+        // Parse browser
+        let browser = "Unknown";
+        if (ua.includes("Firefox")) browser = "Firefox";
+        else if (ua.includes("Chrome") && !ua.includes("Edg")) browser = "Chrome";
+        else if (ua.includes("Safari") && !ua.includes("Chrome")) browser = "Safari";
+        else if (ua.includes("Edg")) browser = "Edge";
+        else if (ua.includes("Opera") || ua.includes("OPR")) browser = "Opera";
+
+        // Parse OS
+        let os = "Unknown";
+        if (ua.includes("Win")) os = "Windows";
+        else if (ua.includes("Mac")) os = "macOS";
+        else if (ua.includes("Linux")) os = "Linux";
+        else if (ua.includes("Android")) os = "Android";
+        else if (ua.includes("iOS") || ua.includes("iPhone") || ua.includes("iPad")) os = "iOS";
+
+        // Parse device type
+        let device = "Desktop";
+        if (/Mobile|Android|iPhone/i.test(ua)) device = "Mobile";
+        else if (/iPad|Tablet/i.test(ua)) device = "Tablet";
+
+        // Get IP and location info
+        try {
+          const response = await fetch('https://ipapi.co/json/');
+          const data = await response.json();
+
+          setVisitorInfo({
+            ip: data.ip || "Unknown",
+            browser,
+            os,
+            device,
+            city: data.city,
+            region: data.region,
+            country: data.country_name,
+            timezone: data.timezone,
+            isp: data.org,
+          });
+        } catch (locationError) {
+          // Fallback to just IP if geolocation fails
+          const ipResponse = await fetch('https://api.ipify.org?format=json');
+          const ipData = await ipResponse.json();
+
+          setVisitorInfo({
+            ip: ipData.ip || "Unknown",
+            browser,
+            os,
+            device,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch visitor info:", error);
+        setVisitorInfo({
+          ip: "Unknown",
+          browser: "Unknown",
+          os: "Unknown",
+          device: "Unknown",
+        });
+      }
+    };
+
+    fetchVisitorInfo();
   }, []);
 
   const addToHistory = useCallback((command: string, output: React.ReactNode) => {
@@ -203,6 +285,44 @@ export default function TerminalMode() {
           ));
           break;
 
+        case "demos":
+          addToHistory(cmd, (
+            <div className="space-y-3 text-neutral-300">
+              <p className="text-white font-semibold">Interactive Demos & Simulations</p>
+              {demos.map((demo) => (
+                <div key={demo.id} className="border-l-2 border-white/20 pl-4 space-y-2">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-white font-semibold">{demo.title}</p>
+                      <p className="text-xs text-cyan-400">{demo.category}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-neutral-400">{demo.description}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {demo.tech.map((tech) => (
+                      <span key={tech} className="text-xs text-neutral-400 border border-white/10 rounded px-2 py-0.5">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                  <Link
+                    href={demo.path as Route}
+                    className="text-sm text-white hover:text-neutral-300 underline inline-block"
+                  >
+                    → Launch demo
+                  </Link>
+                </div>
+              ))}
+              <Link
+                href="/demos"
+                className="block mt-4 text-sm text-cyan-400 hover:text-cyan-300 underline"
+              >
+                → View all demos
+              </Link>
+            </div>
+          ));
+          break;
+
         case "arena":
           addToHistory(cmd, (
             <div className="space-y-2 text-neutral-300">
@@ -221,12 +341,76 @@ export default function TerminalMode() {
           break;
 
         case "whoami":
-          addToHistory(cmd, (
-            <div className="space-y-1 text-neutral-300">
-              <p className="text-white">devansh@engineer-mode</p>
-              <p className="text-sm">Software Engineer | Systems Builder | Community Leader</p>
-            </div>
-          ));
+          if (!visitorInfo) {
+            addToHistory(cmd, (
+              <div className="space-y-1 text-neutral-300">
+                <p className="text-yellow-400">🔄 Fetching visitor information...</p>
+              </div>
+            ));
+          } else {
+            addToHistory(cmd, (
+              <div className="space-y-3 text-neutral-300">
+                <div className="border-l-2 border-white/20 pl-4 space-y-1">
+                  <p className="text-white font-semibold">🔐 Security Scan Complete</p>
+                  <p className="text-xs text-neutral-400">Analyzing visitor session...</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <p className="text-white font-semibold">Visitor Information:</p>
+                  <div className="ml-4 space-y-1 text-sm font-mono">
+                    <div className="flex items-start gap-2">
+                      <span className="text-cyan-400">📍 IP Address:</span>
+                      <span className="text-white">{visitorInfo.ip}</span>
+                    </div>
+                    {visitorInfo.city && visitorInfo.country && (
+                      <div className="flex items-start gap-2">
+                        <span className="text-cyan-400">🌍 Location:</span>
+                        <span className="text-white">
+                          {visitorInfo.city}, {visitorInfo.region && `${visitorInfo.region}, `}{visitorInfo.country}
+                        </span>
+                      </div>
+                    )}
+                    {visitorInfo.timezone && (
+                      <div className="flex items-start gap-2">
+                        <span className="text-cyan-400">🕐 Timezone:</span>
+                        <span className="text-white">{visitorInfo.timezone}</span>
+                      </div>
+                    )}
+                    <div className="flex items-start gap-2">
+                      <span className="text-cyan-400">🌐 Browser:</span>
+                      <span className="text-white">{visitorInfo.browser}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-cyan-400">💻 OS:</span>
+                      <span className="text-white">{visitorInfo.os}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-cyan-400">📱 Device:</span>
+                      <span className="text-white">{visitorInfo.device}</span>
+                    </div>
+                    {visitorInfo.isp && (
+                      <div className="flex items-start gap-2">
+                        <span className="text-cyan-400">🔌 ISP:</span>
+                        <span className="text-white">{visitorInfo.isp}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="border-l-2 border-emerald-500/30 pl-4 space-y-1">
+                  <p className="text-emerald-400 font-semibold">System Owner:</p>
+                  <div className="ml-2 space-y-0.5 text-sm">
+                    <p className="text-white font-mono">devansh@engineer-mode</p>
+                    <p className="text-neutral-400">Software Engineer | Systems Builder | Community Leader</p>
+                  </div>
+                </div>
+
+                <div className="text-xs text-neutral-500 pt-2 border-t border-white/10">
+                  <p>✓ Access Level: VISITOR | Session Active</p>
+                </div>
+              </div>
+            ));
+          }
           break;
 
         case "pwd":
@@ -249,7 +433,7 @@ export default function TerminalMode() {
           ));
       }
     },
-    [addToHistory, currentPath]
+    [addToHistory, currentPath, visitorInfo]
   );
 
   const handleSubmit = useCallback(
