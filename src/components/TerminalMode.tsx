@@ -156,7 +156,8 @@ export default function TerminalMode() {
             timezone: data.timezone,
             isp: data.org,
           });
-        } catch (locationError) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_locationError) {
           // Fallback to just IP if geolocation fails
           const ipResponse = await fetch('https://api.ipify.org?format=json');
           const ipData = await ipResponse.json();

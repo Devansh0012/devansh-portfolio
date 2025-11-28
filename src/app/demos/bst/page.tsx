@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Trash2, Play } from "lucide-react";
+import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 
 class TreeNode {
   value: number;
@@ -171,10 +171,10 @@ export default function BSTVisualizer() {
     calculatePositions(root, 400, 50, 150);
   }
 
-  const renderTree = (node: TreeNode | null): JSX.Element[] => {
+  const renderTree = (node: TreeNode | null): React.JSX.Element[] => {
     if (!node) return [];
 
-    const elements: JSX.Element[] = [];
+    const elements: React.JSX.Element[] = [];
 
     // Draw lines to children
     if (node.left) {

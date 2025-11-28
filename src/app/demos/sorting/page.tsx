@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Play, Pause, RotateCcw, Zap } from "lucide-react";
+import { ArrowLeft, Play, RotateCcw, Zap } from "lucide-react";
 
 type Algorithm = "bubble" | "quick" | "merge";
 

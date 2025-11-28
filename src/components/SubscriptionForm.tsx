@@ -49,15 +49,16 @@ function SubscriptionFormContent({
         });
         setEmail("");
       } else {
-        setMessage({ 
-          type: 'error', 
-          text: data.error || 'Something went wrong. Please try again.' 
+        setMessage({
+          type: 'error',
+          text: data.error || 'Something went wrong. Please try again.'
         });
       }
-    } catch (err) {
-      setMessage({ 
-        type: 'error', 
-        text: 'Network error. Please check your connection and try again.' 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_err) {
+      setMessage({
+        type: 'error',
+        text: 'Network error. Please check your connection and try again.'
       });
     } finally {
       setLoading(false);

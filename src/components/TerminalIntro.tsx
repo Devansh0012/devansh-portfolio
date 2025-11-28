@@ -245,7 +245,7 @@ export default function TerminalIntro() {
     inputRef.current?.focus();
   }, []);
 
-  const getPrompt = () => {
+  const getPrompt = useCallback(() => {
     const dir = currentPath === "/home/devansh" ? "~" : currentPath.replace("/home/devansh", "~");
     return (
       <span className="select-none text-xs">
@@ -257,7 +257,7 @@ export default function TerminalIntro() {
         <span className="text-yellow-400 ml-1">❯</span>
       </span>
     );
-  };
+  }, [currentPath]);
 
   const handleCommand = useCallback(
     (rawInput: string) => {
@@ -526,7 +526,7 @@ export default function TerminalIntro() {
         }
       }
     },
-    [currentPath, visitorInfo]
+    [currentPath, visitorInfo, getPrompt]
   );
 
   const onSubmit = useCallback(
@@ -597,7 +597,7 @@ export default function TerminalIntro() {
         setLines([]);
       }
     },
-    [history, historyIndex, command]
+    [history, historyIndex, command, getPrompt]
   );
 
   return (

@@ -39,7 +39,8 @@ function UnsubscribeContent() {
       } else {
         setError(data.error || 'Failed to unsubscribe. Please try again.');
       }
-    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_err) {
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);

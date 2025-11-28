@@ -105,7 +105,7 @@ function RadialIntro({
     }, 1300);
 
     return () => stops.forEach((stop) => stop());
-  }, []);
+  }, [scope, animate]);
 
   return (
     <LayoutGroup>
