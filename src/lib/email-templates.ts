@@ -448,13 +448,13 @@ export function getWelcomeEmail({ email, unsubscribeUrl, type }: Omit<EmailTempl
       </div>
       
       <div style="text-align: center;">
-        <a href="https://www.devanshdubey.com/arena" class="cta-button">🎮 Try the Code Arena</a>
+        <a href="https://www.devanshdubey.com/demos" class="cta-button">🎮 Try the Demos</a>
         <a href="https://www.devanshdubey.com/engineer" class="cta-button">🔧 Explore Projects</a>
       </div>
-      
+
       <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 20px; margin-top: 32px;">
         <p style="color: #10b981; font-size: 14px; margin: 0; text-align: center;">
-          <strong>🚀 Pro tip:</strong> Check out the Code Arena to test your skills against real-world system design challenges!
+          <strong>🚀 Pro tip:</strong> Check out the interactive demos to explore visualizations of algorithms and system design concepts!
         </p>
       </div>
     </div>
@@ -484,10 +484,10 @@ ${isCommunity
   : "You'll receive your first engineering digest soon, packed with insights from building resilient distributed systems."}
 
 Check out these while you wait:
-• Code Arena: https://www.devanshdubey.com/arena
+• Interactive Demos: https://www.devanshdubey.com/demos
 • Engineering Projects: https://www.devanshdubey.com/engineer
 
-Pro tip: Try the Code Arena to test your skills against real-world system design challenges!
+Pro tip: Check out the interactive demos to explore visualizations of algorithms and system design concepts!
 
 This email was sent to ${email}
 Unsubscribe: ${unsubscribeUrl}

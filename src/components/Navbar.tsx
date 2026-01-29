@@ -10,8 +10,7 @@ const links = [
   { label: "Recruiter", href: "/recruiter" },
   { label: "Engineer", href: "/engineer" },
   { label: "Blog", href: "/blog" },
-  { label: "Arena", href: "/arena" },
-  { label: "Leaderboard", href: "/arena/leaderboard" },
+  { label: "Demos", href: "/demos" },
   { label: "Community", href: "/community" },
 ] satisfies Array<{ label: string; href: Route }>;
 

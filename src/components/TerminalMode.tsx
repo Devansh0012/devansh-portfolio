@@ -60,7 +60,7 @@ const fileSystem: FileSystem = {
           <li>cat [file] - Read file contents</li>
           <li>cd [dir] - Change directory (coming soon)</li>
           <li>projects - View all projects</li>
-          <li>arena - Launch code arena</li>
+          <li>demos - View interactive demos</li>
         </ul>
       </div>
     ),
@@ -74,7 +74,6 @@ const AVAILABLE_COMMANDS = {
   clear: "Clear terminal history",
   projects: "Display all engineering projects",
   demos: "View interactive demos and simulations",
-  arena: "Navigate to code arena",
   about: "Show information about engineer mode",
   whoami: "Display current user info",
   pwd: "Print working directory",
@@ -319,17 +318,6 @@ export default function TerminalMode() {
                 className="block mt-4 text-sm text-cyan-400 hover:text-cyan-300 underline"
               >
                 → View all demos
-              </Link>
-            </div>
-          ));
-          break;
-
-        case "arena":
-          addToHistory(cmd, (
-            <div className="space-y-2 text-neutral-300">
-              <p className="text-white">Launching Code Arena...</p>
-              <Link href={{ pathname: "/arena" as Route }} className="text-white hover:text-neutral-300 underline">
-                → Click here to enter the arena
               </Link>
             </div>
           ));

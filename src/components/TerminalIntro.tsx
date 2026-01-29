@@ -308,7 +308,7 @@ export default function TerminalIntro() {
                 <div><span className="text-yellow-400">date</span> <span className="text-slate-500">- date/time</span></div>
               </div>
               <div className="mt-1.5 text-xs text-slate-400">
-                Special: <span className="text-emerald-400">projects</span>, <span className="text-emerald-400">blog</span>, <span className="text-emerald-400">arena</span>, <span className="text-emerald-400">logs</span>
+                Special: <span className="text-emerald-400">projects</span>, <span className="text-emerald-400">blog</span>, <span className="text-emerald-400">demos</span>, <span className="text-emerald-400">logs</span>
               </div>
             </div>
           );
@@ -469,12 +469,12 @@ export default function TerminalIntro() {
           break;
         }
 
-        case "arena": {
+        case "demos": {
           addOutput(
             <div className="space-y-0.5 text-xs">
-              <div className="text-slate-300">⚔️ Code Challenge Arena</div>
-              <Link href="/arena" className="block text-blue-400 hover:text-blue-300 underline">
-                → Enter arena
+              <div className="text-slate-300">🎮 Interactive Demos & Visualizations</div>
+              <Link href="/demos" className="block text-blue-400 hover:text-blue-300 underline">
+                → View demos
               </Link>
             </div>
           );
@@ -565,7 +565,7 @@ export default function TerminalIntro() {
       } else if (event.key === "Tab") {
         event.preventDefault();
         // Basic tab completion for commands
-        const commands = ["ls", "cd", "cat", "pwd", "clear", "echo", "help", "whoami", "date", "projects", "blog", "arena", "logs", "sudo"];
+        const commands = ["ls", "cd", "cat", "pwd", "clear", "echo", "help", "whoami", "date", "projects", "blog", "demos", "logs", "sudo"];
         const matches = commands.filter(cmd => cmd.startsWith(command.trim()));
         
         if (matches.length === 1) {

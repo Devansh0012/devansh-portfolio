@@ -285,7 +285,7 @@ export default function RecruiterPage() {
                     <ArrowUpRight className="h-4 w-4" />
                   </Button>
                 </a>
-                <Link href={{ pathname: "/arena" as Route }}>
+                <Link href={{ pathname: "/demos" as Route }}>
                   <Button variant="secondary" size="md">
                     Preview engineer chops
                     <ArrowUpRight className="h-4 w-4" />

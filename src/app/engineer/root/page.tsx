@@ -37,10 +37,10 @@ export default function RootWorkspacePage() {
             Request access
           </Link>
           <Link
-            href="/arena"
+            href="/demos"
             className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:border-emerald-200"
           >
-            Try the public arena
+            Try the demos
           </Link>
         </div>
       </div>
