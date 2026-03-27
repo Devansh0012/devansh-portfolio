@@ -5,6 +5,8 @@ import { Terminal as TerminalIcon, Cpu } from "lucide-react";
 import { projects, demos } from "@/lib/data";
 import Link from "next/link";
 import type { Route } from "next";
+import Terminal2048 from "@/components/games/Terminal2048";
+import TerminalTetris from "@/components/games/TerminalTetris";
 
 type CommandHistory = {
   command: string;
@@ -28,6 +30,10 @@ const fileSystem: FileSystem = {
   demos: {
     type: "directory",
     description: "Interactive mini demos and simulations",
+  },
+  games: {
+    type: "directory",
+    description: "Terminal games (game 2048 | game tetris)",
   },
   about: {
     type: "file",
@@ -74,6 +80,7 @@ const AVAILABLE_COMMANDS = {
   clear: "Clear terminal history",
   projects: "Display all engineering projects",
   demos: "View interactive demos and simulations",
+  game: "Play a game (game 2048 | game tetris)",
   about: "Show information about engineer mode",
   whoami: "Display current user info",
   pwd: "Print working directory",
@@ -87,6 +94,7 @@ export default function TerminalMode() {
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [activeGame, setActiveGame] = useState<"2048" | "tetris" | null>(null);
   const [visitorInfo, setVisitorInfo] = useState<{
     ip: string;
     browser: string;
@@ -323,6 +331,39 @@ export default function TerminalMode() {
           ));
           break;
 
+        case "game": {
+          const gameName = argument.toLowerCase();
+          if (gameName === "2048") {
+            addToHistory(cmd, (
+              <p className="text-emerald-400">Launching 2048... Use arrow keys to play, Q/Esc to quit.</p>
+            ));
+            setActiveGame("2048");
+          } else if (gameName === "tetris") {
+            addToHistory(cmd, (
+              <p className="text-cyan-400">Launching Tetris... Use arrow keys to play, Q/Esc to quit.</p>
+            ));
+            setActiveGame("tetris");
+          } else {
+            addToHistory(cmd, (
+              <div className="space-y-2 text-neutral-300">
+                <p className="text-white font-semibold">Available Games:</p>
+                <div className="space-y-1 ml-2">
+                  <div className="flex gap-4">
+                    <span className="text-emerald-400 font-mono w-16">2048</span>
+                    <span className="text-neutral-400">Slide and merge tiles to reach 2048</span>
+                  </div>
+                  <div className="flex gap-4">
+                    <span className="text-cyan-400 font-mono w-16">tetris</span>
+                    <span className="text-neutral-400">Classic block-stacking puzzle game</span>
+                  </div>
+                </div>
+                <p className="text-neutral-500 mt-2">Usage: game &lt;name&gt; (e.g., game 2048)</p>
+              </div>
+            ));
+          }
+          break;
+        }
+
         case "about":
           if (fileSystem.about.content) {
             addToHistory(cmd, fileSystem.about.content);
@@ -463,43 +504,66 @@ export default function TerminalMode() {
         className="flex-1 cursor-text overflow-y-auto bg-black font-mono text-sm"
       >
         <div className="mx-auto max-w-6xl space-y-4 px-4 py-6">
-          {/* Welcome Message */}
-          {showWelcome && (
-            <div className="space-y-3 text-neutral-400">
-              <p className="text-white">Welcome to Engineer Mode Terminal v1.0.0</p>
-              <p>Type &apos;help&apos; to see available commands or &apos;ls&apos; to list files.</p>
-              <p className="text-neutral-500">─────────────────────────────────────────</p>
+          {activeGame ? (
+            <div>
+              {activeGame === "2048" && (
+                <Terminal2048
+                  onExit={() => {
+                    setActiveGame(null);
+                    setTimeout(() => inputRef.current?.focus(), 50);
+                  }}
+                />
+              )}
+              {activeGame === "tetris" && (
+                <TerminalTetris
+                  onExit={() => {
+                    setActiveGame(null);
+                    setTimeout(() => inputRef.current?.focus(), 50);
+                  }}
+                />
+              )}
             </div>
-          )}
+          ) : (
+            <>
+              {/* Welcome Message */}
+              {showWelcome && (
+                <div className="space-y-3 text-neutral-400">
+                  <p className="text-white">Welcome to Engineer Mode Terminal v1.0.0</p>
+                  <p>Type &apos;help&apos; to see available commands or &apos;ls&apos; to list files.</p>
+                  <p className="text-neutral-500">─────────────────────────────────────────</p>
+                </div>
+              )}
 
-          {/* Command History */}
-          {history.map((entry, idx) => (
-            <div key={idx} className="space-y-2">
-              <div className="flex items-center gap-2">
+              {/* Command History */}
+              {history.map((entry, idx) => (
+                <div key={idx} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-neutral-500">{currentPath}</span>
+                    <span className="text-white">$</span>
+                    <span className="text-neutral-300">{entry.command}</span>
+                  </div>
+                  <div className="pl-4">{entry.output}</div>
+                </div>
+              ))}
+
+              {/* Current Command Input */}
+              <form onSubmit={handleSubmit} className="flex items-center gap-2">
                 <span className="text-neutral-500">{currentPath}</span>
                 <span className="text-white">$</span>
-                <span className="text-neutral-300">{entry.command}</span>
-              </div>
-              <div className="pl-4">{entry.output}</div>
-            </div>
-          ))}
-
-          {/* Current Command Input */}
-          <form onSubmit={handleSubmit} className="flex items-center gap-2">
-            <span className="text-neutral-500">{currentPath}</span>
-            <span className="text-white">$</span>
-            <input
-              ref={inputRef}
-              type="text"
-              value={currentCommand}
-              onChange={(e) => setCurrentCommand(e.target.value)}
-              className="flex-1 bg-transparent text-neutral-300 outline-none"
-              spellCheck={false}
-              autoComplete="off"
-              autoFocus
-            />
-            <span className="animate-pulse text-white">▊</span>
-          </form>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={currentCommand}
+                  onChange={(e) => setCurrentCommand(e.target.value)}
+                  className="flex-1 bg-transparent text-neutral-300 outline-none"
+                  spellCheck={false}
+                  autoComplete="off"
+                  autoFocus
+                />
+                <span className="animate-pulse text-white">▊</span>
+              </form>
+            </>
+          )}
         </div>
       </div>
 
