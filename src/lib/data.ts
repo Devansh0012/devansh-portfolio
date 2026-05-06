@@ -263,4 +263,12 @@ export const demos: Demo[] = [
     path: "/demos/rate-limiter",
     tech: ["React", "TypeScript", "Systems Design"],
   },
+  {
+    id: "fourier-visualizer",
+    title: "Fourier Series Visualizer",
+    description: "Draw, type, or upload — watch rotating epicycles reconstruct any shape with live DFT coefficients computed in your browser.",
+    category: "Math",
+    path: "/demos/fourier",
+    tech: ["React", "Canvas", "DFT", "TypeScript"],
+  },
 ];
