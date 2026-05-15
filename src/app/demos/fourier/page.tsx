@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Pause, Play, RotateCcw, Pencil, Type, FileImage, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Pause, Play, RotateCcw, Pencil, Type, FileImage, Image as ImageIcon, Cpu, Code2 } from "lucide-react";
 import DrawPad from "./components/DrawPad";
 import TextInput from "./components/TextInput";
 import SvgUpload from "./components/SvgUpload";
@@ -10,13 +10,22 @@ import ImageUpload from "./components/ImageUpload";
 import FourierCanvas from "./components/FourierCanvas";
 import CoefficientPanel from "./components/CoefficientPanel";
 import MathSummary from "./components/MathSummary";
-import { computeDFT } from "@/lib/fourier/dft";
+import { computeDFT, type FourierCoefficient } from "@/lib/fourier/dft";
+import { wasmComputeDFT } from "@/lib/wasm/fourier";
 import {
   normalizeForCanvas,
   pointsToComplex,
   resamplePath,
   type Point,
 } from "@/lib/fourier/pathSampling";
+
+type ComputeBackend = "wasm" | "js";
+
+type DftTiming = {
+  backend: ComputeBackend;
+  ms: number;
+  coefficients: number;
+};
 
 type Tab = "draw" | "text" | "svg" | "image";
 
@@ -40,11 +49,47 @@ export default function FourierVisualizer() {
   const [resetSignal, setResetSignal] = useState(0);
   const [tickInfo, setTickInfo] = useState({ t: 0, activeIndex: 0 });
   const [completed, setCompleted] = useState(false);
+  const [backend, setBackend] = useState<ComputeBackend>("wasm");
+  const [coefficients, setCoefficients] = useState<FourierCoefficient[]>([]);
+  const [timing, setTiming] = useState<DftTiming | null>(null);
 
-  const coefficients = useMemo(() => {
-    if (normalizedPath.length < 4) return [];
-    return computeDFT(pointsToComplex(normalizedPath));
-  }, [normalizedPath]);
+  useEffect(() => {
+    if (normalizedPath.length < 4) {
+      setCoefficients([]);
+      setTiming(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const samples = pointsToComplex(normalizedPath);
+      let coeffs: FourierCoefficient[];
+      let actual: ComputeBackend = backend;
+      let ms = 0;
+      if (backend === "wasm") {
+        try {
+          const t0 = performance.now();
+          coeffs = await wasmComputeDFT(samples);
+          ms = performance.now() - t0;
+        } catch (err) {
+          console.warn("[fourier] WASM failed, falling back to JS:", err);
+          actual = "js";
+          const t0 = performance.now();
+          coeffs = computeDFT(samples);
+          ms = performance.now() - t0;
+        }
+      } else {
+        const t0 = performance.now();
+        coeffs = computeDFT(samples);
+        ms = performance.now() - t0;
+      }
+      if (cancelled) return;
+      setCoefficients(coeffs);
+      setTiming({ backend: actual, ms, coefficients: coeffs.length });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [normalizedPath, backend]);
 
   const handleCommit = (rawPoints: Point[]) => {
     if (rawPoints.length < 4) return;
@@ -170,6 +215,53 @@ export default function FourierVisualizer() {
                 <RotateCcw className="h-3.5 w-3.5" />
                 {completed ? "Replay" : "Reset trace"}
               </button>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-white/10 bg-white/5 overflow-hidden">
+            <div className="grid grid-cols-2 border-b border-white/10">
+              {(["wasm", "js"] as const).map((b) => {
+                const active = backend === b;
+                const Icon = b === "wasm" ? Cpu : Code2;
+                return (
+                  <button
+                    key={b}
+                    type="button"
+                    onClick={() => setBackend(b)}
+                    className={`flex items-center justify-center gap-2 px-2 py-3 text-xs transition-colors ${
+                      active
+                        ? "bg-cyan-400/10 text-cyan-300 border-b-2 border-cyan-400"
+                        : "text-neutral-400 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {b === "wasm" ? "C++ / WASM" : "JavaScript"}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="p-4 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-neutral-400">Active backend</span>
+                <span className="text-white tabular-nums">
+                  {timing?.backend === "wasm" ? "WASM" : timing?.backend === "js" ? "JS" : "…"}
+                  {backend === "wasm" && timing?.backend === "js" && (
+                    <span className="text-amber-400 ml-1">(fallback)</span>
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-400">DFT time</span>
+                <span className="text-white tabular-nums">
+                  {timing ? `${timing.ms.toFixed(2)} ms` : "—"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-400">Coefficients</span>
+                <span className="text-cyan-300 tabular-nums">
+                  {timing ? timing.coefficients.toLocaleString() : "—"}
+                </span>
+              </div>
             </div>
           </div>
 
