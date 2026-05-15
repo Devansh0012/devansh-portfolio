@@ -271,4 +271,12 @@ export const demos: Demo[] = [
     path: "/demos/fourier",
     tech: ["React", "Canvas", "DFT", "TypeScript"],
   },
+  {
+    id: "ulam-spiral",
+    title: "3D Ulam Spiral",
+    description: "Plot integers along a square, helix, or Sacks spiral and watch primes light up — revealing the surprising diagonal patterns in prime distribution.",
+    category: "Math",
+    path: "/demos/ulam-spiral",
+    tech: ["React", "Three.js", "R3F", "Number Theory"],
+  },
 ];
