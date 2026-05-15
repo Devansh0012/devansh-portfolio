@@ -3,8 +3,9 @@
 import { useCallback, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ArrowLeft, Pause, Play, RotateCcw, Grid3x3, Spline, Orbit } from "lucide-react";
+import { ArrowLeft, Pause, Play, RotateCcw, Grid3x3, Spline, Orbit, Cpu, Code2 } from "lucide-react";
 import type { SpiralStyle } from "@/lib/ulam/spiral";
+import type { ComputeBackend, TimingInfo } from "./components/UlamScene";
 
 const UlamScene = dynamic(
   () => import("./components/UlamScene"),
@@ -36,10 +37,16 @@ export default function UlamSpiralPage() {
   const [replaySignal, setReplaySignal] = useState(0);
   const [revealed, setRevealed] = useState(0);
   const [primesShown, setPrimesShown] = useState(0);
+  const [backend, setBackend] = useState<ComputeBackend>("wasm");
+  const [timing, setTiming] = useState<TimingInfo | null>(null);
 
   const onProgress = useCallback((r: number, p: number) => {
     setRevealed(r);
     setPrimesShown(p);
+  }, []);
+
+  const onTiming = useCallback((info: TimingInfo) => {
+    setTiming(info);
   }, []);
 
   const replay = () => {
@@ -164,6 +171,62 @@ export default function UlamSpiralPage() {
             </div>
           </div>
 
+          <div className="rounded-lg border border-white/10 bg-white/5 overflow-hidden">
+            <div className="grid grid-cols-2 border-b border-white/10">
+              {(["wasm", "js"] as const).map((b) => {
+                const active = backend === b;
+                const Icon = b === "wasm" ? Cpu : Code2;
+                return (
+                  <button
+                    key={b}
+                    type="button"
+                    onClick={() => {
+                      setBackend(b);
+                      setReplaySignal((n) => n + 1);
+                    }}
+                    className={`flex items-center justify-center gap-2 px-2 py-3 text-xs transition-colors ${
+                      active
+                        ? "bg-cyan-400/10 text-cyan-300 border-b-2 border-cyan-400"
+                        : "text-neutral-400 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {b === "wasm" ? "C++ / WASM" : "JavaScript"}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="p-4 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-neutral-400">Active backend</span>
+                <span className="text-white tabular-nums">
+                  {timing?.backend === "wasm" ? "WASM" : timing?.backend === "js" ? "JS" : "…"}
+                  {backend === "wasm" && timing?.backend === "js" && (
+                    <span className="text-amber-400 ml-1">(fallback)</span>
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-400">Sieve</span>
+                <span className="text-white tabular-nums">
+                  {timing ? `${timing.sieveMs.toFixed(2)} ms` : "—"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-400">Spiral coords</span>
+                <span className="text-white tabular-nums">
+                  {timing ? `${timing.spiralMs.toFixed(2)} ms` : "—"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-400">Primes ≤ N</span>
+                <span className="text-cyan-300 tabular-nums">
+                  {timing ? timing.primeCount.toLocaleString() : "—"}
+                </span>
+              </div>
+            </div>
+          </div>
+
           <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-2 text-xs">
             <div className="flex justify-between">
               <span className="text-neutral-400">Revealed</span>
@@ -206,7 +269,9 @@ export default function UlamSpiralPage() {
             buildup={buildup}
             speed={speed}
             replaySignal={replaySignal}
+            backend={backend}
             onProgress={onProgress}
+            onTiming={onTiming}
           />
         </main>
       </div>

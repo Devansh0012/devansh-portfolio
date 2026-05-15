@@ -1,10 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { computePositions, type SpiralStyle } from "@/lib/ulam/spiral";
+import { computePositionsFlat, type SpiralStyle } from "@/lib/ulam/spiral";
 import { sieveOfEratosthenes } from "@/lib/ulam/primes";
+import { wasmSieve, wasmSpiralPositions } from "@/lib/wasm/ulam";
+
+export type ComputeBackend = "wasm" | "js";
+
+export type TimingInfo = {
+  backend: ComputeBackend;
+  sieveMs: number;
+  spiralMs: number;
+  primeCount: number;
+};
 
 type SceneProps = {
   style: SpiralStyle;
@@ -12,94 +22,114 @@ type SceneProps = {
   buildup: boolean;
   speed: number;
   replaySignal: number;
+  backend: ComputeBackend;
   onProgress?: (revealed: number, primesShown: number) => void;
+  onTiming?: (info: TimingInfo) => void;
 };
 
-type SpiralStats = {
-  positions: { x: number; y: number; z: number }[];
-  primeIdx: number[];
-  compIdx: number[];
-  primeMatrices: THREE.Matrix4[];
-  compMatrices: THREE.Matrix4[];
+type SpiralData = {
+  positions: Float32Array;
+  isPrime: Uint8Array;
+  primeIdx: Uint32Array;
+  compIdx: Uint32Array;
+  primeMatrices: Float32Array;
+  compMatrices: Float32Array;
 };
 
-function buildScene(style: SpiralStyle, count: number): SpiralStats {
-  const positions = computePositions(style, count);
-  const isPrime = sieveOfEratosthenes(count);
-  const primeIdx: number[] = [];
-  const compIdx: number[] = [];
-  for (let i = 0; i < count; i++) {
-    const n = i + 1;
-    if (n >= 2 && isPrime[n]) primeIdx.push(i);
-    else compIdx.push(i);
-  }
-
+function buildMatrices(
+  style: SpiralStyle,
+  positions: Float32Array,
+  primeIdx: Uint32Array,
+  compIdx: Uint32Array
+): { primeMatrices: Float32Array; compMatrices: Float32Array } {
   const dummy = new THREE.Object3D();
-  const primeMatrices: THREE.Matrix4[] = new Array(primeIdx.length);
-  const compMatrices: THREE.Matrix4[] = new Array(compIdx.length);
+  const primeMatrices = new Float32Array(primeIdx.length * 16);
+  const compMatrices = new Float32Array(compIdx.length * 16);
+
+  const writePrime = (k: number, x: number, y: number, z: number, sx: number, sy: number, sz: number) => {
+    dummy.position.set(x, y, z);
+    dummy.rotation.set(0, 0, 0);
+    dummy.scale.set(sx, sy, sz);
+    dummy.updateMatrix();
+    primeMatrices.set(dummy.matrix.elements, k * 16);
+  };
+  const writeComp = (k: number, x: number, y: number, z: number, sx: number, sy: number, sz: number) => {
+    dummy.position.set(x, y, z);
+    dummy.rotation.set(0, 0, 0);
+    dummy.scale.set(sx, sy, sz);
+    dummy.updateMatrix();
+    compMatrices.set(dummy.matrix.elements, k * 16);
+  };
 
   if (style === "square") {
     const pillarH = 2.6;
     const tile = 0.55;
-    primeIdx.forEach((i, k) => {
-      const p = positions[i];
-      dummy.position.set(p.x, pillarH / 2, p.z);
-      dummy.rotation.set(0, 0, 0);
-      dummy.scale.set(0.55, pillarH, 0.55);
-      dummy.updateMatrix();
-      primeMatrices[k] = dummy.matrix.clone();
-    });
-    compIdx.forEach((i, k) => {
-      const p = positions[i];
-      dummy.position.set(p.x, 0, p.z);
-      dummy.rotation.set(0, 0, 0);
-      dummy.scale.set(tile, 0.05, tile);
-      dummy.updateMatrix();
-      compMatrices[k] = dummy.matrix.clone();
-    });
+    for (let k = 0; k < primeIdx.length; k++) {
+      const i = primeIdx[k];
+      const px = positions[i * 3];
+      const pz = positions[i * 3 + 2];
+      writePrime(k, px, pillarH / 2, pz, 0.55, pillarH, 0.55);
+    }
+    for (let k = 0; k < compIdx.length; k++) {
+      const i = compIdx[k];
+      const px = positions[i * 3];
+      const pz = positions[i * 3 + 2];
+      writeComp(k, px, 0, pz, tile, 0.05, tile);
+    }
   } else if (style === "helix") {
-    primeIdx.forEach((i, k) => {
-      const p = positions[i];
-      const r = Math.hypot(p.x, p.z) || 1;
-      const nx = p.x / r;
-      const nz = p.z / r;
+    for (let k = 0; k < primeIdx.length; k++) {
+      const i = primeIdx[k];
+      const px = positions[i * 3];
+      const py = positions[i * 3 + 1];
+      const pz = positions[i * 3 + 2];
+      const r = Math.hypot(px, pz) || 1;
+      const nx = px / r;
+      const nz = pz / r;
       const push = 1.2;
-      dummy.position.set(p.x + nx * push, p.y, p.z + nz * push);
-      dummy.rotation.set(0, 0, 0);
-      dummy.scale.set(0.55, 0.55, 0.55);
-      dummy.updateMatrix();
-      primeMatrices[k] = dummy.matrix.clone();
-    });
-    compIdx.forEach((i, k) => {
-      const p = positions[i];
-      dummy.position.set(p.x, p.y, p.z);
-      dummy.rotation.set(0, 0, 0);
-      dummy.scale.set(0.2, 0.2, 0.2);
-      dummy.updateMatrix();
-      compMatrices[k] = dummy.matrix.clone();
-    });
+      writePrime(k, px + nx * push, py, pz + nz * push, 0.55, 0.55, 0.55);
+    }
+    for (let k = 0; k < compIdx.length; k++) {
+      const i = compIdx[k];
+      const px = positions[i * 3];
+      const py = positions[i * 3 + 1];
+      const pz = positions[i * 3 + 2];
+      writeComp(k, px, py, pz, 0.2, 0.2, 0.2);
+    }
   } else {
-    // sacks
     const pillarH = 1.8;
-    primeIdx.forEach((i, k) => {
-      const p = positions[i];
-      dummy.position.set(p.x, pillarH / 2, p.z);
-      dummy.rotation.set(0, 0, 0);
-      dummy.scale.set(0.4, pillarH, 0.4);
-      dummy.updateMatrix();
-      primeMatrices[k] = dummy.matrix.clone();
-    });
-    compIdx.forEach((i, k) => {
-      const p = positions[i];
-      dummy.position.set(p.x, 0, p.z);
-      dummy.rotation.set(0, 0, 0);
-      dummy.scale.set(0.22, 0.05, 0.22);
-      dummy.updateMatrix();
-      compMatrices[k] = dummy.matrix.clone();
-    });
+    for (let k = 0; k < primeIdx.length; k++) {
+      const i = primeIdx[k];
+      const px = positions[i * 3];
+      const pz = positions[i * 3 + 2];
+      writePrime(k, px, pillarH / 2, pz, 0.4, pillarH, 0.4);
+    }
+    for (let k = 0; k < compIdx.length; k++) {
+      const i = compIdx[k];
+      const px = positions[i * 3];
+      const pz = positions[i * 3 + 2];
+      writeComp(k, px, 0, pz, 0.22, 0.05, 0.22);
+    }
   }
 
-  return { positions, primeIdx, compIdx, primeMatrices, compMatrices };
+  return { primeMatrices, compMatrices };
+}
+
+function partitionPrimes(isPrime: Uint8Array, count: number): { primeIdx: Uint32Array; compIdx: Uint32Array } {
+  let pCount = 0;
+  for (let i = 0; i < count; i++) {
+    const n = i + 1;
+    if (n >= 2 && isPrime[n]) pCount++;
+  }
+  const primeIdx = new Uint32Array(pCount);
+  const compIdx = new Uint32Array(count - pCount);
+  let pi = 0;
+  let ci = 0;
+  for (let i = 0; i < count; i++) {
+    const n = i + 1;
+    if (n >= 2 && isPrime[n]) primeIdx[pi++] = i;
+    else compIdx[ci++] = i;
+  }
+  return { primeIdx, compIdx };
 }
 
 function SpiralMeshes({
@@ -108,35 +138,96 @@ function SpiralMeshes({
   buildup,
   speed,
   replaySignal,
+  backend,
   onProgress,
+  onTiming,
 }: SceneProps) {
   const primeRef = useRef<THREE.InstancedMesh>(null);
   const compRef = useRef<THREE.InstancedMesh>(null);
-
-  const stats = useMemo(
-    () => buildScene(style, count),
-    [style, count]
-  );
+  const [data, setData] = useState<SpiralData | null>(null);
 
   useEffect(() => {
-    if (!primeRef.current || !compRef.current) return;
-    for (let i = 0; i < stats.primeMatrices.length; i++) {
-      primeRef.current.setMatrixAt(i, stats.primeMatrices[i]);
+    let cancelled = false;
+    (async () => {
+      let positions: Float32Array;
+      let isPrime: Uint8Array;
+      let actualBackend: ComputeBackend = backend;
+      let sieveMs = 0;
+      let spiralMs = 0;
+
+      if (backend === "wasm") {
+        try {
+          const t0 = performance.now();
+          isPrime = await wasmSieve(count);
+          sieveMs = performance.now() - t0;
+          const t1 = performance.now();
+          positions = await wasmSpiralPositions(style, count);
+          spiralMs = performance.now() - t1;
+        } catch (err) {
+          console.warn("[ulam] WASM failed, falling back to JS:", err);
+          actualBackend = "js";
+          const t0 = performance.now();
+          isPrime = sieveOfEratosthenes(count);
+          sieveMs = performance.now() - t0;
+          const t1 = performance.now();
+          positions = computePositionsFlat(style, count);
+          spiralMs = performance.now() - t1;
+        }
+      } else {
+        const t0 = performance.now();
+        isPrime = sieveOfEratosthenes(count);
+        sieveMs = performance.now() - t0;
+        const t1 = performance.now();
+        positions = computePositionsFlat(style, count);
+        spiralMs = performance.now() - t1;
+      }
+
+      if (cancelled) return;
+
+      const { primeIdx, compIdx } = partitionPrimes(isPrime, count);
+      const { primeMatrices, compMatrices } = buildMatrices(
+        style,
+        positions,
+        primeIdx,
+        compIdx
+      );
+
+      setData({ positions, isPrime, primeIdx, compIdx, primeMatrices, compMatrices });
+      onTiming?.({
+        backend: actualBackend,
+        sieveMs,
+        spiralMs,
+        primeCount: primeIdx.length,
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [style, count, backend, onTiming]);
+
+  useEffect(() => {
+    if (!data || !primeRef.current || !compRef.current) return;
+    const m = new THREE.Matrix4();
+    for (let i = 0; i < data.primeIdx.length; i++) {
+      m.fromArray(data.primeMatrices, i * 16);
+      primeRef.current.setMatrixAt(i, m);
     }
-    for (let i = 0; i < stats.compMatrices.length; i++) {
-      compRef.current.setMatrixAt(i, stats.compMatrices[i]);
+    for (let i = 0; i < data.compIdx.length; i++) {
+      m.fromArray(data.compMatrices, i * 16);
+      compRef.current.setMatrixAt(i, m);
     }
     primeRef.current.instanceMatrix.needsUpdate = true;
     compRef.current.instanceMatrix.needsUpdate = true;
-  }, [stats]);
+  }, [data]);
 
   const buildState = useRef({ revealed: 0 });
 
   useEffect(() => {
     buildState.current.revealed = buildup ? 0 : count;
-  }, [buildup, count, replaySignal, style]);
+  }, [buildup, count, replaySignal, style, backend, data]);
 
   useFrame((_, delta) => {
+    if (!data) return;
     const target = count;
     if (buildup && buildState.current.revealed < target) {
       buildState.current.revealed = Math.min(
@@ -149,13 +240,13 @@ function SpiralMeshes({
     const revealed = Math.floor(buildState.current.revealed);
 
     let pCount = 0;
-    const primeIdx = stats.primeIdx;
+    const primeIdx = data.primeIdx;
     for (let i = 0; i < primeIdx.length; i++) {
       if (primeIdx[i] < revealed) pCount++;
       else break;
     }
     let cCount = 0;
-    const compIdx = stats.compIdx;
+    const compIdx = data.compIdx;
     for (let i = 0; i < compIdx.length; i++) {
       if (compIdx[i] < revealed) cCount++;
       else break;
@@ -182,11 +273,14 @@ function SpiralMeshes({
     };
   }, [primeGeom, compGeom]);
 
+  const primeInstanceCount = data ? Math.max(1, data.primeIdx.length) : 1;
+  const compInstanceCount = data ? Math.max(1, data.compIdx.length) : 1;
+
   return (
     <>
       <instancedMesh
         ref={compRef}
-        args={[compGeom, undefined, Math.max(1, stats.compIdx.length)]}
+        args={[compGeom, undefined, compInstanceCount]}
         frustumCulled={false}
       >
         <meshStandardMaterial
@@ -199,7 +293,7 @@ function SpiralMeshes({
       </instancedMesh>
       <instancedMesh
         ref={primeRef}
-        args={[primeGeom, undefined, Math.max(1, stats.primeIdx.length)]}
+        args={[primeGeom, undefined, primeInstanceCount]}
         frustumCulled={false}
       >
         <meshStandardMaterial
@@ -293,7 +387,6 @@ export default function UlamScene(props: SceneProps) {
     } catch {}
   };
 
-  // Camera distance scales with count so the spiral fits.
   const dist = useMemo(() => {
     const base = Math.sqrt(props.count) * 1.1 + 12;
     return Math.min(220, base);

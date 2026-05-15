@@ -76,3 +76,18 @@ export function computePositions(
       return sacksPositions(count, 0.55);
   }
 }
+
+/** Flat (x, y, z) per index — matches the layout the WASM kernel writes. */
+export function computePositionsFlat(
+  style: SpiralStyle,
+  count: number
+): Float32Array {
+  const out = new Float32Array(count * 3);
+  const pts = computePositions(style, count);
+  for (let i = 0; i < count; i++) {
+    out[i * 3 + 0] = pts[i].x;
+    out[i * 3 + 1] = pts[i].y;
+    out[i * 3 + 2] = pts[i].z;
+  }
+  return out;
+}
