@@ -7,14 +7,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-// Create supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Database types
+// Mirrors the check constraint on subscribers.subscription_type in database/schema.sql.
+export type SubscriptionType = 'community' | 'blog';
+
 export interface Subscriber {
   id: string;
   email: string;
-  subscription_type: 'community' | 'blog';
+  subscription_type: SubscriptionType;
   verified: boolean;
   verification_token: string | null;
   unsubscribe_token: string;
@@ -25,13 +26,8 @@ export interface Subscriber {
   unsubscribed_at: string | null;
 }
 
-// Database helper functions
 export class SubscriberService {
-  
-  /**
-   * Create a new subscriber with verification token
-   */
-  static async createSubscriber(email: string, type: 'community' | 'blog', verificationToken: string) {
+  static async createSubscriber(email: string, type: SubscriptionType, verificationToken: string) {
     const { data, error } = await supabase
       .from('subscribers')
       .insert({
@@ -50,16 +46,13 @@ export class SubscriberService {
     return data as Subscriber;
   }
 
-  /**
-   * Verify a subscriber using verification token
-   */
   static async verifySubscriber(verificationToken: string) {
     const { data, error } = await supabase
       .from('subscribers')
       .update({
         verified: true,
         verified_at: new Date().toISOString(),
-        verification_token: null, // Clear token after verification
+        verification_token: null, // single-use: cleared so the link can't be replayed
       })
       .eq('verification_token', verificationToken)
       .eq('verified', false)
@@ -77,10 +70,7 @@ export class SubscriberService {
     return data as Subscriber;
   }
 
-  /**
-   * Check if email already exists for a subscription type
-   */
-  static async checkExistingSubscriber(email: string, type: 'community' | 'blog') {
+  static async checkExistingSubscriber(email: string, type: SubscriptionType) {
     const { data, error } = await supabase
       .from('subscribers')
       .select('*')
@@ -89,12 +79,11 @@ export class SubscriberService {
       .is('unsubscribed_at', null)
       .single();
 
-    // If no error and data exists, subscriber already exists
     if (!error && data) {
       return data as Subscriber;
     }
 
-    // If error is not "No rows returned", throw it
+    // PGRST116 = .single() found no rows — the expected "not subscribed" case.
     if (error && error.code !== 'PGRST116') {
       throw new Error(`Failed to check subscriber: ${error.message}`);
     }
@@ -102,9 +91,6 @@ export class SubscriberService {
     return null;
   }
 
-  /**
-   * Unsubscribe a subscriber using unsubscribe token
-   */
   static async unsubscribeSubscriber(unsubscribeToken: string) {
     const { data, error } = await supabase
       .from('subscribers')
@@ -127,9 +113,6 @@ export class SubscriberService {
     return data as Subscriber;
   }
 
-  /**
-   * Get subscriber by unsubscribe token
-   */
   static async getSubscriberByUnsubscribeToken(unsubscribeToken: string) {
     const { data, error } = await supabase
       .from('subscribers')
@@ -144,10 +127,7 @@ export class SubscriberService {
     return data as Subscriber;
   }
 
-  /**
-   * Get all verified subscribers for a specific type
-   */
-  static async getVerifiedSubscribers(type: 'community' | 'blog') {
+  static async getVerifiedSubscribers(type: SubscriptionType) {
     const { data, error } = await supabase
       .from('subscribers')
       .select('*')
@@ -163,9 +143,7 @@ export class SubscriberService {
     return data as Subscriber[];
   }
 
-  /**
-   * Get subscriber statistics
-   */
+  // Reads the subscriber_stats view (monthly aggregates), not the base table.
   static async getSubscriberStats() {
     const { data, error } = await supabase
       .from('subscriber_stats')

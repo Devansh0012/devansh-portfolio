@@ -3,9 +3,10 @@
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import type { SubscriptionType } from "@/lib/supabase";
 
 interface SubscriptionFormProps {
-  type: 'community' | 'blog';
+  type: SubscriptionType;
   placeholder?: string;
   buttonText?: string;
   className?: string;
@@ -54,8 +55,7 @@ function SubscriptionFormContent({
           text: data.error || 'Something went wrong. Please try again.'
         });
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_err) {
+    } catch {
       setMessage({
         type: 'error',
         text: 'Network error. Please check your connection and try again.'

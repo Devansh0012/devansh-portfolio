@@ -6,19 +6,10 @@ import type { Route } from "next";
 import { CardSpotlight } from "@/components/ui/card-spotlight";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { Tabs } from "@/components/ui/Tabs";
-
-type Post = {
-  slug: string;
-  title: string;
-  description: string;
-  date: string;
-  category: string;
-  tags: string[];
-  readingTime: string;
-};
+import type { BlogSummary } from "@/lib/blog";
 
 type Props = {
-  posts: Post[];
+  posts: BlogSummary[];
   initialTag?: string;
 };
 

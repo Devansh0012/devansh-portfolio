@@ -19,8 +19,7 @@ export default function RateLimiterSimulator() {
   const [maxTokens, setMaxTokens] = useState(10);
   const [refillRate, setRefillRate] = useState(2); // tokens per second
   const [requestCount, setRequestCount] = useState(0);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_windowStart, setWindowStart] = useState(Date.now());
+  const [, setWindowStart] = useState(Date.now());
   const [queue, setQueue] = useState<Request[]>([]);
   const requestIdRef = useRef(0);
 

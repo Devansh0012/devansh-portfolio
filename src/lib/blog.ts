@@ -35,7 +35,7 @@ const parseReadingTime = (content: string) => {
   return `${minutes} min read`;
 };
 
-export async function getAllPostSlugs() {
+async function getAllPostSlugs() {
   await ensureBlogDirectory();
   const files = await fs.readdir(BLOG_DIR);
   return files.filter((file) => file.endsWith(".mdx")).map((file) => file.replace(/\.mdx$/, ""));

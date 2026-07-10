@@ -12,14 +12,13 @@ import CoefficientPanel from "./components/CoefficientPanel";
 import MathSummary from "./components/MathSummary";
 import { computeDFT, type FourierCoefficient } from "@/lib/fourier/dft";
 import { wasmComputeDFT } from "@/lib/wasm/fourier";
+import type { ComputeBackend } from "@/lib/wasm/loader";
 import {
   normalizeForCanvas,
   pointsToComplex,
   resamplePath,
   type Point,
 } from "@/lib/fourier/pathSampling";
-
-type ComputeBackend = "wasm" | "js";
 
 type DftTiming = {
   backend: ComputeBackend;

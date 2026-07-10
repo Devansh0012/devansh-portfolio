@@ -12,6 +12,12 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 
 type Params = Promise<{ slug: string }>;
 
+// A missing .mdx file means the slug doesn't exist and should 404; any other
+// failure (broken frontmatter, MDX compile error) must surface, not be
+// swallowed as a not-found.
+const isMissingPost = (error: unknown) =>
+  (error as NodeJS.ErrnoException)?.code === "ENOENT";
+
 export async function generateStaticParams() {
   const posts = await getAllPosts();
   return posts.map((post) => ({ slug: post.slug }));
@@ -35,7 +41,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
         description: post.description,
       },
     } satisfies Metadata;
-  } catch {
+  } catch (error) {
+    if (!isMissingPost(error)) throw error;
     return {
       title: "Blog post",
       description: "Article not found",
@@ -45,7 +52,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function BlogPostPage({ params }: { params: Params }) {
   const { slug } = await params;
-  const post = await getPostBySlug(slug).catch(() => null);
+  const post = await getPostBySlug(slug).catch((error: unknown) => {
+    if (!isMissingPost(error)) throw error;
+    return null;
+  });
   if (!post) {
     notFound();
   }

@@ -1,11 +1,15 @@
-// Email templates with glassmorphic design matching your portfolio
+// Verification and welcome email templates, built as raw HTML strings with
+// embedded CSS so they render consistently in email clients. Styled to match
+// the site's dark glassmorphic theme.
+
+import type { SubscriptionType } from '@/lib/supabase';
 
 export interface EmailTemplateProps {
   name?: string;
   email: string;
   verificationUrl: string;
   unsubscribeUrl: string;
-  type: 'community' | 'blog';
+  type: SubscriptionType;
 }
 
 export function getEmailTemplate({ email, verificationUrl, unsubscribeUrl, type }: EmailTemplateProps) {
