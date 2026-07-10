@@ -217,14 +217,6 @@ export const projects: Project[] = [
     highlight: "Drag-and-drop interface with real-time processing feedback. Handles files up to 500MB with automatic cleanup and comprehensive file validation.",
   },
   {
-    title: "Violence Detection System",
-    description:
-      "Developed a system to detect physical violence and alert authorities.",
-    tech: ["Python", "Next.js", "MobileNetV2", "S3"],
-    link: "https://violence-detection-tan.vercel.app/",
-    highlight: "Used Websockets for real-time system integration with webcams and RTSP protocol for modular CCTV cameras.",
-  },
-  {
     title: "LAN File Sharing App",
     description:
       "Self-hosted tool for instantly broadcasting files within local networks with chunked uploads and live progress.",
