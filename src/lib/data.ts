@@ -30,13 +30,6 @@ export type Testimonial = {
   avatar?: string;
 };
 
-export type OpenSource = {
-  repo: string;
-  description: string;
-  contribution: string;
-  link: string;
-};
-
 export type Metric = {
   label: string;
   value: string;
@@ -261,21 +254,6 @@ export const testimonials: Testimonial[] = [
       "He communicates complex technical tradeoffs with clarity and ensures teams stay focused on mission outcomes.",
   },
 ];
-
-// export const openSource: OpenSource[] = [
-//   {
-//     repo: "open-sauced/pizza",
-//     description: "Telemetry collector for OSS maintainers.",
-//     contribution: "Implemented deterministic job scheduling and test harness improvements.",
-//     link: "https://github.com/open-sauced/pizza",
-//   },
-//   {
-//     repo: "OpenAISpaceApps/mission-control",
-//     description: "Toolkit for visualising NASA datasets in real time.",
-//     contribution: "Added offline-first caching and improved data lineage visualisations.",
-//     link: "https://github.com/OpenAISpaceApps/mission-control",
-//   },
-// ];
 
 export const timeline: TimelineEntry[] = [
   {

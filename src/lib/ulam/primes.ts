@@ -13,9 +13,3 @@ export function sieveOfEratosthenes(max: number): Uint8Array {
   }
   return isPrime;
 }
-
-export function countPrimes(isPrime: Uint8Array): number {
-  let count = 0;
-  for (let i = 0; i < isPrime.length; i++) if (isPrime[i]) count++;
-  return count;
-}

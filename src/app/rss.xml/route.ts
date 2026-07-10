@@ -24,7 +24,6 @@ export async function GET() {
     ttl: 60, // Cache for 60 minutes
   });
 
-  // Fetch raw markdown content for each post
   const BLOG_DIR = path.join(process.cwd(), "src/content/blog");
 
   for (const post of posts) {
@@ -32,7 +31,8 @@ export async function GET() {
     const fileContent = await fs.readFile(filePath, "utf-8");
     const { content } = matter(fileContent);
 
-    // Convert markdown to basic HTML-like format for RSS
+    // Minimal regex markdown→HTML for the feed body; full MDX rendering is
+    // overkill here and MDX components wouldn't render in RSS readers anyway.
     const contentHtml = content
       .replace(/^### (.+)$/gm, "<h3>$1</h3>")
       .replace(/^## (.+)$/gm, "<h2>$1</h2>")

@@ -8,11 +8,9 @@ const unsubscribeSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse and validate request body
     const body = await request.json();
     const { token } = unsubscribeSchema.parse(body);
 
-    // Unsubscribe the subscriber
     const subscriber = await SubscriberService.unsubscribeSubscriber(token);
 
     return NextResponse.json({
@@ -54,7 +52,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL('/unsubscribe?error=missing-token', request.url));
     }
 
-    // Get subscriber info to show on unsubscribe page
+    // The GET flow only looks up the subscriber so the confirmation page can
+    // show who is unsubscribing; the actual unsubscribe happens via POST.
     const subscriber = await SubscriberService.getSubscriberByUnsubscribeToken(token);
 
     if (subscriber.unsubscribed_at) {

@@ -6,8 +6,7 @@ import * as THREE from "three";
 import { computePositionsFlat, type SpiralStyle } from "@/lib/ulam/spiral";
 import { sieveOfEratosthenes } from "@/lib/ulam/primes";
 import { wasmSieve, wasmSpiralPositions } from "@/lib/wasm/ulam";
-
-export type ComputeBackend = "wasm" | "js";
+import type { ComputeBackend } from "@/lib/wasm/loader";
 
 export type TimingInfo = {
   backend: ComputeBackend;
@@ -384,7 +383,9 @@ export default function UlamScene(props: SceneProps) {
     rotationRef.current.dragging = false;
     try {
       (e.target as Element).releasePointerCapture(e.pointerId);
-    } catch {}
+    } catch {
+      // Capture may already be gone (e.g. pointercancel); releasing then throws.
+    }
   };
 
   const dist = useMemo(() => {

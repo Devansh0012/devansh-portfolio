@@ -3,6 +3,7 @@
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import type { SubscriptionType } from "@/lib/supabase";
 
 function UnsubscribeContent() {
   const [loading, setLoading] = useState(false);
@@ -12,7 +13,7 @@ function UnsubscribeContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const email = searchParams.get('email');
-  const type = searchParams.get('type') as 'community' | 'blog' | null;
+  const type = searchParams.get('type') as SubscriptionType | null;
   const already = searchParams.get('already') === 'true';
   const urlError = searchParams.get('error');
   const errorMessage = searchParams.get('message');
@@ -39,8 +40,7 @@ function UnsubscribeContent() {
       } else {
         setError(data.error || 'Failed to unsubscribe. Please try again.');
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_err) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);

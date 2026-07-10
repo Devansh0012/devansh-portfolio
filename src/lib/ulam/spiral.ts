@@ -1,8 +1,8 @@
 export type SpiralStyle = "square" | "helix" | "sacks";
 
-export type SpiralPoint = { x: number; y: number; z: number };
+type SpiralPoint = { x: number; y: number; z: number };
 
-export function squareUlamPositions(count: number, spacing = 1): SpiralPoint[] {
+function squareUlamPositions(count: number, spacing = 1): SpiralPoint[] {
   const out: SpiralPoint[] = new Array(count);
   let x = 0;
   let y = 0;
@@ -33,7 +33,7 @@ export function squareUlamPositions(count: number, spacing = 1): SpiralPoint[] {
   return out;
 }
 
-export function helixPositions(
+function helixPositions(
   count: number,
   perTurn = 40,
   radius = 12,
@@ -52,7 +52,7 @@ export function helixPositions(
   return out;
 }
 
-export function sacksPositions(count: number, scale = 0.6): SpiralPoint[] {
+function sacksPositions(count: number, scale = 0.6): SpiralPoint[] {
   const out: SpiralPoint[] = new Array(count);
   for (let i = 0; i < count; i++) {
     const n = i + 1;
@@ -63,7 +63,7 @@ export function sacksPositions(count: number, scale = 0.6): SpiralPoint[] {
   return out;
 }
 
-export function computePositions(
+function computePositions(
   style: SpiralStyle,
   count: number
 ): SpiralPoint[] {

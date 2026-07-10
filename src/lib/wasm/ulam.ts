@@ -1,12 +1,12 @@
 // Loads the Emscripten-built Ulam kernels from /public/wasm/ulam.js and exposes
-// a typed API. Pure browser code — the loader injects a <script> tag, so we
-// avoid forcing Next/Turbopack to bundle the generated glue.
+// a typed API.
 //
 // All compute happens via caller-allocated buffers in WASM linear memory; we
 // view that memory directly through HEAPU8 / HEAPF32, then .slice() the result
 // out so the caller owns a detached typed array.
 
 import type { SpiralStyle } from "@/lib/ulam/spiral";
+import { createWasmLoader } from "@/lib/wasm/loader";
 
 type UlamWasmModule = {
   _malloc: (size: number) => number;
@@ -25,55 +25,13 @@ type UlamWasmModule = {
   HEAPF32: Float32Array;
 };
 
-type FactoryOptions = { locateFile?: (path: string) => string };
-type ModuleFactory = (opts?: FactoryOptions) => Promise<UlamWasmModule>;
-
-const SCRIPT_URL = "/wasm/ulam.js";
-const WASM_URL = "/wasm/ulam.wasm";
-const GLOBAL_FACTORY = "UlamModule";
-
-let modulePromise: Promise<UlamWasmModule> | null = null;
-let scriptPromise: Promise<void> | null = null;
-
-function loadScript(): Promise<void> {
-  if (typeof window === "undefined") {
-    return Promise.reject(new Error("ulam wasm: window is not available"));
-  }
-  if (scriptPromise) return scriptPromise;
-  scriptPromise = new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(
-      `script[data-ulam-wasm="1"]`
-    );
-    if (existing) {
-      resolve();
-      return;
-    }
-    const tag = document.createElement("script");
-    tag.src = SCRIPT_URL;
-    tag.async = true;
-    tag.dataset.ulamWasm = "1";
-    tag.onload = () => resolve();
-    tag.onerror = () =>
-      reject(new Error(`failed to load ${SCRIPT_URL} — did you run npm run build:wasm?`));
-    document.head.appendChild(tag);
-  });
-  return scriptPromise;
-}
-
-export async function getUlamModule(): Promise<UlamWasmModule> {
-  if (modulePromise) return modulePromise;
-  modulePromise = (async () => {
-    await loadScript();
-    const factory = (window as unknown as Record<string, ModuleFactory>)[
-      GLOBAL_FACTORY
-    ];
-    if (typeof factory !== "function") {
-      throw new Error(`ulam wasm: global ${GLOBAL_FACTORY} not found after script load`);
-    }
-    return factory({ locateFile: (f) => (f.endsWith(".wasm") ? WASM_URL : f) });
-  })();
-  return modulePromise;
-}
+const getUlamModule = createWasmLoader<UlamWasmModule>({
+  scriptUrl: "/wasm/ulam.js",
+  wasmUrl: "/wasm/ulam.wasm",
+  globalFactory: "UlamModule",
+  scriptDataAttr: "ulam-wasm",
+  label: "ulam wasm",
+});
 
 /** Run the C++ sieve and return a copy owned by the caller. */
 export async function wasmSieve(n: number): Promise<Uint8Array> {

@@ -37,6 +37,10 @@ export function samplePointsFromSvg(svgText: string, samples = 800): Point[] {
       try {
         return el.getTotalLength();
       } catch {
+        // getTotalLength throws on non-renderable geometry (e.g. a rect with
+        // no width); treat it as zero-length so it's excluded from sampling.
+        // If every element is excluded, the zero-total check below rejects
+        // the SVG with a user-visible error.
         return 0;
       }
     });

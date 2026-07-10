@@ -5,7 +5,8 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ArrowLeft, Pause, Play, RotateCcw, Grid3x3, Spline, Orbit, Cpu, Code2 } from "lucide-react";
 import type { SpiralStyle } from "@/lib/ulam/spiral";
-import type { ComputeBackend, TimingInfo } from "./components/UlamScene";
+import type { TimingInfo } from "./components/UlamScene";
+import type { ComputeBackend } from "@/lib/wasm/loader";
 
 const UlamScene = dynamic(
   () => import("./components/UlamScene"),

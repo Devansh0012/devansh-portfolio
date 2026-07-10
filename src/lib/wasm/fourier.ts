@@ -2,6 +2,7 @@
 // exposes a typed DFT API that returns the same shape as src/lib/fourier/dft.ts.
 
 import type { Complex, FourierCoefficient } from "@/lib/fourier/dft";
+import { createWasmLoader } from "@/lib/wasm/loader";
 
 type FourierWasmModule = {
   _malloc: (size: number) => number;
@@ -10,55 +11,13 @@ type FourierWasmModule = {
   HEAPF32: Float32Array;
 };
 
-type FactoryOptions = { locateFile?: (path: string) => string };
-type ModuleFactory = (opts?: FactoryOptions) => Promise<FourierWasmModule>;
-
-const SCRIPT_URL = "/wasm/fourier.js";
-const WASM_URL = "/wasm/fourier.wasm";
-const GLOBAL_FACTORY = "FourierModule";
-
-let modulePromise: Promise<FourierWasmModule> | null = null;
-let scriptPromise: Promise<void> | null = null;
-
-function loadScript(): Promise<void> {
-  if (typeof window === "undefined") {
-    return Promise.reject(new Error("fourier wasm: window is not available"));
-  }
-  if (scriptPromise) return scriptPromise;
-  scriptPromise = new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(
-      `script[data-fourier-wasm="1"]`
-    );
-    if (existing) {
-      resolve();
-      return;
-    }
-    const tag = document.createElement("script");
-    tag.src = SCRIPT_URL;
-    tag.async = true;
-    tag.dataset.fourierWasm = "1";
-    tag.onload = () => resolve();
-    tag.onerror = () =>
-      reject(new Error(`failed to load ${SCRIPT_URL} — did you run npm run build:wasm?`));
-    document.head.appendChild(tag);
-  });
-  return scriptPromise;
-}
-
-async function getFourierModule(): Promise<FourierWasmModule> {
-  if (modulePromise) return modulePromise;
-  modulePromise = (async () => {
-    await loadScript();
-    const factory = (window as unknown as Record<string, ModuleFactory>)[
-      GLOBAL_FACTORY
-    ];
-    if (typeof factory !== "function") {
-      throw new Error(`fourier wasm: global ${GLOBAL_FACTORY} not found after script load`);
-    }
-    return factory({ locateFile: (f) => (f.endsWith(".wasm") ? WASM_URL : f) });
-  })();
-  return modulePromise;
-}
+const getFourierModule = createWasmLoader<FourierWasmModule>({
+  scriptUrl: "/wasm/fourier.js",
+  wasmUrl: "/wasm/fourier.wasm",
+  globalFactory: "FourierModule",
+  scriptDataAttr: "fourier-wasm",
+  label: "fourier wasm",
+});
 
 /**
  * Runs the C++ DFT and returns the same coefficient shape as `computeDFT` in
