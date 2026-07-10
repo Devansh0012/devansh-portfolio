@@ -43,9 +43,9 @@ const fileSystem: FileSystem = {
         <p className="text-white font-semibold">Engineer Mode - Terminal Interface</p>
         <p>Welcome to the playground. This terminal interface provides access to:</p>
         <ul className="list-disc list-inside space-y-1 ml-2">
-          <li>Engineering projects and experiments</li>
+          <li>AI gateway projects and engineering experiments</li>
           <li>Interactive demos and simulations</li>
-          <li>Build logs and observability snapshots</li>
+          <li>Verified delivery logs and observability snapshots</li>
           <li>System architecture documentation</li>
         </ul>
         <p className="mt-4">Type &apos;help&apos; to see available commands.</p>
@@ -285,7 +285,7 @@ export default function TerminalMode() {
                     rel="noopener noreferrer"
                     className="text-sm text-white hover:text-neutral-300 underline"
                   >
-                    → View repository
+                    → View project
                   </a>
                 </div>
               ))}

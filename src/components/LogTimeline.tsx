@@ -22,9 +22,9 @@ export default function LogTimeline() {
           <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-emerald-400/80">
             <CalendarClock className="h-4 w-4" /> timeline
           </p>
-          <h3 className="mt-2 text-2xl font-semibold text-emerald-100">Interactive deployment feed</h3>
+          <h3 className="mt-2 text-2xl font-semibold text-emerald-100">Engineering focus feed</h3>
           <p className="text-sm text-emerald-200/80">
-            Filter moments by theme to explore how incidents were handled and features shipped.
+            A high-level view of the technical areas I&apos;ve been working across.
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
@@ -70,7 +70,18 @@ export default function LogTimeline() {
             )}
             <div className="pl-6">
               <p className="text-xs uppercase tracking-[0.3em] text-emerald-400/80">{entry.timestamp}</p>
-              <h4 className="mt-3 text-lg font-semibold text-emerald-100">{entry.title}</h4>
+              {entry.link ? (
+                <a
+                  href={entry.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-block text-lg font-semibold text-emerald-100 transition-colors hover:text-emerald-300"
+                >
+                  {entry.title} ↗
+                </a>
+              ) : (
+                <h4 className="mt-3 text-lg font-semibold text-emerald-100">{entry.title}</h4>
+              )}
               <p className="mt-2 text-sm text-emerald-200/80">{entry.body}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {entry.tags.map((tag) => (

@@ -11,13 +11,13 @@ import { IntroScreen } from "@/components/IntroScreen";
 const modes = [
   {
     title: "Recruiter Mode",
-    description: "Snapshot of impact, team leadership, and case studies tailored for hiring conversations.",
+    description: "Professional impact from Palo Alto Networks, Portkey AI, and Docxster—with focused case studies.",
     href: "/recruiter",
     icon: Trophy,
   },
   {
     title: "Engineer Mode",
-    description: "Interactive terminal, engineering logs, and demos that dive into systems design decisions.",
+    description: "Interactive terminal, real delivery logs, and demos that explore systems and protocol decisions.",
     href: "/engineer",
     icon: TerminalSquare,
   },
@@ -30,13 +30,13 @@ export default function HomePage() {
         <GravityStarsBackground className="absolute inset-0 -z-10" starsCount={100} starsSize={2} />
         <section className="mx-auto flex max-w-4xl flex-col items-center px-4 pb-24 pt-32 text-center md:pt-40">
           <p className="text-sm uppercase tracking-[0.35em] text-neutral-400">
-            Software Development Engineer
+            Software Engineer at Palo Alto Networks
           </p>
         <h1 className="text-glow mt-6 text-5xl font-semibold leading-tight text-white md:text-6xl">
           Devansh Dubey
         </h1>
         <p className="mt-6 max-w-2xl text-xl text-neutral-300">
-          Building resilient systems and empowering developers through thoughtful engineering.
+          Building production AI gateways, MCP infrastructure, and the reliability layers between models, tools, and developers.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           <Link href={{ pathname: "/recruiter" }}>
@@ -81,7 +81,7 @@ export default function HomePage() {
           <div className="relative z-20">
             <h2 className="text-4xl font-semibold text-white">Let&apos;s build something together</h2>
             <p className="mt-4 text-xl text-neutral-300">
-              I&apos;m always open to discussing new opportunities and interesting projects.
+              I&apos;m always open to discussing AI infrastructure, developer platforms, and ambitious systems work.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link href={{ pathname: "/community" }}>

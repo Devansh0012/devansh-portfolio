@@ -4,7 +4,7 @@ import TerminalMode from "@/components/TerminalMode";
 export const metadata: Metadata = {
   title: "Engineer Mode",
   description:
-    "Dive into Devansh Dubey's engineering playground featuring terminal interactions, build logs, demos, and tooling.",
+    "Explore Devansh Dubey's AI gateway work, verified engineering logs, interactive terminal, demos, and tooling.",
 };
 
 export default function EngineerPage() {

@@ -19,23 +19,29 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.devanshdubey.com"),
   title: {
-    default: "Devansh Dubey — Engineer, Builder, Storyteller",
+    default: "Devansh Dubey — AI Infrastructure Engineer",
     template: "%s | Devansh Dubey",
   },
   description:
-    "Software Development Engineer crafting resilient distributed systems, hackathon winner, and lifelong learner.",
+    "Software Engineer at Palo Alto Networks building AI gateway infrastructure, MCP systems, OAuth integrations, and resilient developer platforms.",
   keywords: [
     "Devansh Dubey",
     "Software Engineer",
     "Backend",
     "Distributed Systems",
+    "AI Gateway",
+    "Model Context Protocol",
+    "MCP",
+    "OAuth",
+    "Portkey",
+    "Palo Alto Networks",
     "Next.js Portfolio",
   ],
   authors: [{ name: "Devansh Dubey", url: "https://www.devanshdubey.com" }],
   openGraph: {
-    title: "Devansh Dubey — Engineer, Builder, Storyteller",
+    title: "Devansh Dubey — AI Infrastructure Engineer",
     description:
-      "Explore Devansh's work across backend engineering, hackathon wins, and community projects.",
+      "Explore Devansh's work across Palo Alto Networks, Portkey AI, MCP infrastructure, provider integrations, and distributed systems.",
     url: "https://www.devanshdubey.com",
     siteName: "Devansh Dubey Portfolio",
     images: [
@@ -53,9 +59,9 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@devanshdubey",
     creator: "@devanshdubey",
-    title: "Devansh Dubey — Engineer, Builder, Storyteller",
+    title: "Devansh Dubey — AI Infrastructure Engineer",
     description:
-      "Backend engineer crafting resilient infrastructure, hackathon champion, and NASA Space Apps nominee.",
+      "Software Engineer at Palo Alto Networks building AI gateway infrastructure, MCP systems, and resilient developer platforms.",
     images: ["/og-cover.png"],
   },
   alternates: {

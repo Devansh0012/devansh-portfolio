@@ -49,6 +49,15 @@ export type TimelineEntry = {
   timestamp: string;
   body: string;
   tags: string[];
+  link?: string;
+};
+
+export type Education = {
+  degree: string;
+  institution: string;
+  university: string;
+  graduation: string;
+  highlights: string[];
 };
 
 export type Demo = {
@@ -61,39 +70,66 @@ export type Demo = {
 };
 
 export const heroHighlights: Metric[] = [
-  { label: "Production Deployments", value: "30+", sublabel: "Ship fast, ship safely" },
-  { label: "Hackathon Wins", value: "2", sublabel: "Across national events" },
-  { label: "Requests / day", value: "10K+", sublabel: "Systems kept resilient" },
+  { label: "Engineering Focus", value: "AI Infrastructure", sublabel: "Gateways, protocols, and distributed systems" },
+  { label: "NASA Space Apps", value: "Global Nominee", sublabel: "Lead developer" },
+  { label: "GATE", value: "Qualified", sublabel: "GATE 2024" },
 ];
 
 export const skillCategories: SkillCategory[] = [
   {
     title: "Languages",
-    items: ["Python", "Go", "TypeScript", "C++", "SQL"],
+    items: ["Go", "TypeScript", "Python", "Java", "C++", "JavaScript", "SQL"],
   },
   {
-    title: "Frameworks",
-    items: ["Next.js", "Django", "FastAPI", "React", "Tailwind"],
+    title: "Backend & Frameworks",
+    items: ["Fastify", "Fiber", "FastAPI", "Flask", "Django", "Next.js", "React"],
   },
   {
-    title: "Cloud & Infra",
-    items: ["AWS", "GCP", "Docker", "Render"],
+    title: "AI Gateway & Protocols",
+    items: ["MCP", "OAuth 2.1", "OpenID Connect", "AWS Bedrock", "Google Vertex AI"],
   },
   {
-    title: "Data & Messaging",
-    items: ["Postgres", "MongoDB", "Redis", "GraphQL"],
+    title: "Cloud, Data & Infrastructure",
+    items: ["Kubernetes", "Docker", "Helm", "Cloudflare", "Nginx", "Postgres", "Redis", "MySQL"],
+  },
+];
+
+export const education: Education[] = [
+  {
+    degree: "B.E. in Information Technology",
+    institution: "K.K. Wagh Institute of Engineering Education & Research",
+    university: "Savitribai Phule Pune University",
+    graduation: "2025",
+    highlights: ["GATE 2024 qualified", "First Class with Distinction", "President of Developer Community"],
   },
 ];
 
 export const experiences: Experience[] = [
   {
-    company: "Docxster",
-    role: "Software Development Engineer",
-    start: "Dec 2024",
+    company: "Palo Alto Networks (Portkey AI)",
+    role: "Software Engineer",
+    start: "Mar 2026",
     end: "Present",
     location: "Bengaluru, India",
     summary:
-      "Designing and scaling the automation platform powering hundreds of enterprise workflows.",
+      "Joined Portkey AI to build its AI and MCP gateways, and now continue that work at Palo Alto Networks following the acquisition.",
+    achievements: [
+      "Build and maintain backend services for AI gateway and MCP infrastructure used by production applications.",
+      "Develop provider integrations across routing, authentication, configuration, and model lifecycle workflows.",
+      "Improve platform reliability through stronger OAuth flows, caching, observability, and protocol interoperability.",
+      "Collaborate across gateway, control-plane, and developer-experience surfaces to deliver secure AI infrastructure.",
+    ],
+    tech: ["TypeScript", "Node.js", "MCP", "OAuth 2.1", "Redis", "Kubernetes", "AWS Bedrock"],
+    url: "https://portkey.ai",
+  },
+  {
+    company: "Docxster",
+    role: "Associate Software Engineer",
+    start: "Dec 2024",
+    end: "Mar 2026",
+    location: "Bengaluru, India",
+    summary:
+      "Converted from Software Development Intern to Associate Software Engineer while building document automation systems across backend, ML, and frontend surfaces.",
     achievements: [
       "Architected and developed Docxster Drive, a cloud storage platform with advanced file management, sharing capabilities.",
       "Built intelligent search engine using Meilisearch and Google OCR achieving full-text search across all file types with typo-tolerance.",
@@ -119,6 +155,50 @@ export const experiences: Experience[] = [
 ];
 
 export const projects: Project[] = [
+  {
+    title: "MCP Gateway Infrastructure",
+    description:
+      "Backend infrastructure for securely connecting AI applications with enterprise tools through the Model Context Protocol.",
+    tech: ["TypeScript", "Node.js", "MCP", "OAuth 2.1", "PKCE", "Redis"],
+    link: "https://portkey.ai",
+    highlight:
+      "Focused on authentication, session management, discovery, and reliable communication between clients and tool servers.",
+  },
+  {
+    title: "AI Gateway Provider Integrations",
+    description:
+      "Production integrations that provide a consistent gateway interface across major model and cloud providers.",
+    tech: ["TypeScript", "AWS Bedrock", "Claude", "Google Vertex AI", "Zod"],
+    link: "https://portkey.ai",
+    highlight:
+      "Worked across routing, authentication, configuration, streaming, and provider-specific compatibility.",
+  },
+  {
+    title: "Gateway Reliability & Authentication",
+    description:
+      "Reliability and security improvements for authentication, caching, observability, and long-lived gateway sessions.",
+    tech: ["MCP", "OAuth 2.1", "Redis", "Node.js", "OpenTelemetry"],
+    link: "https://portkey.ai",
+    highlight:
+      "Designed for interoperability with enterprise identity systems and resilience under production traffic.",
+  },
+  {
+    title: "NASA Space Apps Challenge",
+    description:
+      "Led development of an interactive education platform selected as a NASA Space Apps Global Nominee.",
+    tech: ["React", "Django", "Tailwind CSS", "Product Engineering"],
+    link: "https://nasa-space-challenge24.vercel.app",
+    highlight: "Served as lead developer and advanced to Global Nominee status.",
+  },
+  {
+    title: "Violence Detection System",
+    description:
+      "Real-time physical-violence detection and alerting system designed for webcam and modular CCTV feeds.",
+    tech: ["PyTorch", "OpenCV", "FastAPI", "React", "WebSockets", "RTSP"],
+    link: "https://violence-detection-tan.vercel.app/",
+    highlight:
+      "Combined ML inference with WebSocket updates and RTSP camera support for real-time monitoring.",
+  },
   {
     title: "Document Schema Builder",
     description:
@@ -199,36 +279,36 @@ export const testimonials: Testimonial[] = [
 
 export const timeline: TimelineEntry[] = [
   {
-    id: "deploy-0154",
-    title: "Deployed rate limiter v3",
-    timestamp: "2025-08-14 22:17 UTC",
+    id: "mcp-reliability",
+    title: "Strengthened MCP gateway reliability",
+    timestamp: "2026",
     body:
-      "Refactored the flag evaluation pipeline to cut decision latency to 12ms at p95. Rolled out gradually using feature flags.",
-    tags: ["deploy", "backend"],
+      "Improved protocol interoperability, session handling, and error recovery for enterprise tool integrations.",
+    tags: ["mcp", "reliability", "backend"],
   },
   {
-    id: "incident-042",
-    title: "Mitigated webhook storm",
-    timestamp: "2025-05-03 04:02 UTC",
+    id: "oauth-platform",
+    title: "Expanded enterprise authentication support",
+    timestamp: "2026",
     body:
-      "Spotted and throttled a rogue partner integration spamming 70k req/min, introduced adaptive back-pressure controls.",
-    tags: ["incident", "resilience"],
+      "Worked on OAuth-based integrations, token lifecycle management, and compatibility with enterprise identity systems.",
+    tags: ["oauth", "security", "platform"],
   },
   {
-    id: "talk-nyc",
-    title: "Spoke at Serverless NYC",
-    timestamp: "2024-11-20 18:30 UTC",
+    id: "provider-integrations",
+    title: "Extended AI provider coverage",
+    timestamp: "2026",
     body:
-      "Gave a talk on building observable event-driven systems with Go + OpenTelemetry. Shared battle stories from Docxster.",
-    tags: ["talk", "community"],
+      "Built consistent routing, configuration, and streaming behavior across cloud and model providers.",
+    tags: ["ai-gateway", "providers", "backend"],
   },
   {
-    id: "ship-playground",
-    title: "Shipped chaos engineering playground",
-    timestamp: "2024-07-05 09:12 UTC",
+    id: "gateway-observability",
+    title: "Improved gateway observability",
+    timestamp: "2026",
     body:
-      "Released internal tool to simulate cascading failures. Helped teams rehearse incident response before Black Friday.",
-    tags: ["tooling", "platform"],
+      "Added privacy-conscious telemetry and operational signals for debugging and monitoring production traffic.",
+    tags: ["observability", "privacy", "platform"],
   },
 ];
 

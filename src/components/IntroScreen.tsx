@@ -54,7 +54,7 @@ export function IntroScreen({ children }: IntroScreenProps) {
                   Devansh Dubey
                 </h1>
                 <p className="mt-3 text-sm uppercase tracking-[0.35em] text-neutral-400">
-                  Software Development Engineer
+                  Software Engineer at Palo Alto Networks
                 </p>
               </motion.div>
             </div>

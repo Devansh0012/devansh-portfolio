@@ -54,7 +54,7 @@ const fileSystem: Record<string, FileSystemNode> = {
             children: {
               "backend.txt": {
                 type: "file",
-                content: "Backend: Node.js, Python, Java, Go\nDatabases: PostgreSQL, MongoDB, Redis\nCloud: AWS, GCP, Azure",
+                content: "Backend: Node.js, TypeScript, Python, Go\nProtocols: MCP, OAuth 2.1, OpenID Connect\nProviders: AWS Bedrock, Google Vertex AI\nData: PostgreSQL, Redis, Meilisearch",
               },
               "frontend.txt": {
                 type: "file",
@@ -64,7 +64,7 @@ const fileSystem: Record<string, FileSystemNode> = {
           },
           "about.txt": {
             type: "file",
-            content: "👨‍💻 Devansh Dubey\nSoftware Development Engineer\n\nPassionate about:\n- Distributed Systems\n- Developer Tooling\n- Open Source\n\nConnect: /recruiter or /engineer",
+            content: "👨‍💻 Devansh Dubey\nSoftware Engineer at Palo Alto Networks\n\nBuilding:\n- AI Gateway Infrastructure\n- MCP & OAuth Systems\n- Provider Integrations\n- Developer Tooling\n\nConnect: /recruiter or /engineer",
           },
         },
       },
@@ -219,7 +219,7 @@ export default function TerminalIntro() {
                 🚀 Welcome to Devansh&apos;s Dev Environment
               </div>
               <div className="text-slate-400 text-xs mt-0.5">
-                Software Development Engineer | Distributed Systems Enthusiast
+                Software Engineer at Palo Alto Networks | AI Gateway &amp; MCP Infrastructure
               </div>
             </div>
             <div className="text-slate-300 text-xs mb-0.5">

@@ -4,6 +4,7 @@ import type { Route } from "next";
 import { ArrowUpRight, Award, Briefcase, Download, Linkedin } from "lucide-react";
 import {
   communityMetrics,
+  education,
   experiences,
   heroHighlights,
   projects,
@@ -18,7 +19,7 @@ import { GravityStarsBackground } from "@/components/animate-ui/components/backg
 export const metadata: Metadata = {
   title: "Recruiter Mode",
   description:
-    "Overview of Devansh Dubey's professional experience, case studies, testimonials, and hiring information.",
+    "Devansh Dubey's experience at Palo Alto Networks and Portkey AI building AI gateways, MCP, OAuth, provider integrations, and document infrastructure.",
 };
 
 export default function RecruiterPage() {
@@ -32,12 +33,12 @@ export default function RecruiterPage() {
               <Briefcase className="h-3.5 w-3.5" /> Recruiter mode
             </p>
             <h1 className="text-glow text-4xl font-semibold text-white md:text-5xl">
-              Precision-engineered backends, meticulous execution, empathetic leadership.
+              Production AI infrastructure, from provider integrations to MCP reliability.
             </h1>
             <p className="max-w-2xl text-lg text-neutral-300">
-              I&apos;m Devansh Dubey, a Software Engineer at Docxster. I design distributed systems that stay
-              resilient under pressure, mentor developers to ship faster, and bring hackathon energy into every product
-              cycle.
+              I&apos;m Devansh Dubey, a Software Engineer at Palo Alto Networks. I joined Portkey AI as an SDE-1 Backend
+              engineer and continue building its gateway and protocol layers following the acquisition—connecting
+              production applications to models, providers, and enterprise tools.
             </p>
             <div className="flex flex-wrap gap-3">
               <a
@@ -104,7 +105,50 @@ export default function RecruiterPage() {
         </div>
       </section>
 
-      <section className="bg-black/30">
+      <section className="bg-black/30 text-white">
+        <div className="mx-auto max-w-6xl px-4 py-16">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Education</p>
+              <h2 className="text-3xl font-semibold text-white">Academic foundation</h2>
+            </div>
+            <p className="max-w-xl text-sm text-neutral-400">
+              Information Technology graduate with a foundation in algorithms, systems, and applied engineering.
+            </p>
+          </div>
+          <div className="mt-8 grid gap-6">
+            {education.map((item, idx) => (
+              <CardSpotlight
+                key={item.degree}
+                className="relative overflow-hidden rounded-2xl p-6"
+                radius={360}
+                color="#0a0a0a"
+              >
+                <BorderBeam size={180} duration={12 + idx} delay={idx * 0.4} colorFrom="#ffffff" colorTo="#737373" />
+                <div className="relative z-20 md:flex md:items-start md:justify-between md:gap-8">
+                  <div>
+                    <h3 className="text-xl font-semibold text-white">{item.degree}</h3>
+                    <p className="mt-2 text-sm text-neutral-300">{item.institution}</p>
+                    <p className="text-sm text-neutral-500">{item.university} · Class of {item.graduation}</p>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2 md:mt-0 md:justify-end">
+                    {item.highlights.map((highlight) => (
+                      <span
+                        key={highlight}
+                        className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-semibold text-neutral-300"
+                      >
+                        {highlight}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </CardSpotlight>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section>
         <div className="mx-auto max-w-6xl space-y-12 px-4 py-16">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
@@ -112,8 +156,8 @@ export default function RecruiterPage() {
               <h2 className="text-3xl font-semibold text-white">Roles and impact</h2>
             </div>
             <p className="max-w-xl text-sm text-neutral-400">
-              Every engagement pairs technical rigor with measurable business outcomes. Here are highlights from the last
-              few years.
+              Recent work spans AI gateway infrastructure, MCP and OAuth, document automation, and developer-facing
+              product systems.
             </p>
           </div>
           <div className="space-y-8">
@@ -169,15 +213,15 @@ export default function RecruiterPage() {
         </div>
       </section>
 
-      <section className="text-white">
+      <section className="bg-black/30 text-white">
         <div className="mx-auto max-w-6xl px-4 py-16">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Case studies</p>
-              <h2 className="text-3xl font-semibold text-white">Recent projects</h2>
+              <h2 className="text-3xl font-semibold text-white">Systems and products</h2>
             </div>
             <p className="max-w-xl text-sm text-neutral-400">
-              Blend of platform engineering, data-intensive systems, and product velocity.
+              Current AI infrastructure work alongside earlier document systems and independent products.
             </p>
           </div>
           <div className="mt-8 grid gap-6 md:grid-cols-2">
@@ -275,8 +319,8 @@ export default function RecruiterPage() {
             <div className="relative z-20">
               <h2 className="text-3xl font-semibold text-white">Let&apos;s explore what we can build together</h2>
               <p className="mt-4 max-w-2xl text-sm text-neutral-300">
-                Whether you need someone to take ownership of complex systems, launch a new product from scratch, or coach a
-                team through high-stakes launches, I&apos;d love to chat.
+                If you&apos;re building AI infrastructure, developer platforms, or distributed product systems, I&apos;d love
+                to compare notes.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <a href="mailto:devanshdubey0012@gmail.com">

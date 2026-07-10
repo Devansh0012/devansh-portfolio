@@ -301,7 +301,7 @@ Didn't sign up for this? Unsubscribe: ${unsubscribeUrl}
 
 Best regards,
 Devansh Dubey
-Software Development Engineer
+Software Engineer at Palo Alto Networks
 https://www.devanshdubey.com
 `
   };
