@@ -1,35 +1,69 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import type { Route } from "next";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { buttonVariants } from "@/components/ui/Button";
+import { mailto } from "@/lib/site";
 import type { SubscriptionType } from "@/lib/supabase";
+
+/**
+ * Unsubscribe flow.
+ *
+ * Brought onto the site's black palette (it was the last page still rendering
+ * on `bg-slate-950` with blue links) and restructured around one idea: leaving
+ * should be as frictionless as joining.
+ *
+ * Peak-End Rule cuts hardest here. This is the last interaction many
+ * subscribers will ever have, and a grudging, guilt-tripping unsubscribe is
+ * exactly the ending people remember. So: the destructive action is a single
+ * clear button, the escape hatch is equally reachable, and the "sorry to see
+ * you go" framing is dropped in favour of telling them precisely what changed
+ * and how to come back.
+ */
+
+function Shell({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <div className="mx-auto flex max-w-2xl flex-col px-4 pb-24 pt-24">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8 sm:p-12">
+          <h1 className="text-3xl font-semibold text-white">{title}</h1>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function UnsubscribeContent() {
   const [loading, setLoading] = useState(false);
   const [unsubscribed, setUnsubscribed] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const searchParams = useSearchParams();
-  const token = searchParams.get('token');
-  const email = searchParams.get('email');
-  const type = searchParams.get('type') as SubscriptionType | null;
-  const already = searchParams.get('already') === 'true';
-  const urlError = searchParams.get('error');
-  const errorMessage = searchParams.get('message');
+  const token = searchParams.get("token");
+  const email = searchParams.get("email");
+  const type = searchParams.get("type") as SubscriptionType | null;
+  const already = searchParams.get("already") === "true";
+  const urlError = searchParams.get("error");
+  const errorMessage = searchParams.get("message");
+
+  const listName = type === "community" ? "community waitlist" : "blog newsletter";
+  const returnPath = (type === "community" ? "/community" : "/blog") as Route;
+  const returnLabel = type === "community" ? "community page" : "blog page";
 
   const handleUnsubscribe = async () => {
     if (!token) return;
-    
+
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch('/api/unsubscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const response = await fetch("/api/unsubscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
       });
 
@@ -38,180 +72,170 @@ function UnsubscribeContent() {
       if (response.ok) {
         setUnsubscribed(true);
       } else {
-        setError(data.error || 'Failed to unsubscribe. Please try again.');
+        setError(data.error || "Failed to unsubscribe. Please try again.");
       }
     } catch {
-      setError('Network error. Please try again.');
+      setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Already unsubscribed
   if (already) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100">
-        <div className="mx-auto flex max-w-2xl flex-col items-center px-4 pb-24 pt-32 text-center">
-          <div className="glass-card rounded-3xl p-12 shadow-xl">
-            <div className="text-6xl mb-6">📭</div>
-            <h1 className="text-3xl font-semibold text-slate-100 mb-4">Already Unsubscribed</h1>
-            <p className="text-slate-300 mb-6">
-              The email address <strong>{email && decodeURIComponent(email)}</strong> is already unsubscribed.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link
-                href="/community"
-                className="glass-card glass-hover inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-slate-100 transition-all duration-300 hover:-translate-y-0.5"
-              >
-                Back to Community
-              </Link>
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 rounded-full border border-slate-500/30 px-6 py-3 text-sm font-semibold text-slate-100 transition-all duration-300 hover:border-slate-400 hover:bg-slate-700/20"
-              >
-                Home
-              </Link>
-            </div>
-          </div>
+      <Shell title="You're already unsubscribed">
+        <p className="mt-4 text-neutral-300">
+          {email ? decodeURIComponent(email) : "That address"} isn&apos;t on the list, so there&apos;s
+          nothing to do here.
+        </p>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link href={returnPath} className={buttonVariants({ variant: "secondary" })}>
+            Back to the {returnLabel}
+          </Link>
+          <Link href="/" className={buttonVariants({ variant: "outline" })}>
+            Home
+          </Link>
         </div>
-      </div>
+      </Shell>
     );
   }
 
-  // Error state
   if (urlError) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100">
-        <div className="mx-auto flex max-w-2xl flex-col items-center px-4 pb-24 pt-32 text-center">
-          <div className="glass-card rounded-3xl p-12 shadow-xl">
-            <div className="text-6xl mb-6">❌</div>
-            <h1 className="text-3xl font-semibold text-slate-100 mb-4">Unsubscribe Error</h1>
-            <p className="text-slate-300 mb-2">
-              {urlError === 'missing-token' && 'Invalid unsubscribe link.'}
-              {urlError === 'invalid-token' && 'This unsubscribe link is invalid or has expired.'}
-            </p>
-            {errorMessage && (
-              <p className="text-slate-400 text-sm mb-6">{decodeURIComponent(errorMessage)}</p>
-            )}
-            <div className="flex flex-wrap justify-center gap-4">
-              <a
-                href="mailto:work@devanshdubey.com"
-                className="glass-card glass-hover inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-slate-100 transition-all duration-300 hover:-translate-y-0.5"
-              >
-                Contact Support
-              </a>
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 rounded-full border border-slate-500/30 px-6 py-3 text-sm font-semibold text-slate-100 transition-all duration-300 hover:border-slate-400 hover:bg-slate-700/20"
-              >
-                Home
-              </Link>
-            </div>
-          </div>
+      <Shell title="That link didn't work">
+        <p className="mt-4 text-neutral-300">
+          {urlError === "missing-token"
+            ? "The unsubscribe link was incomplete."
+            : "This unsubscribe link is invalid or has expired."}
+        </p>
+        {errorMessage && (
+          <p className="mt-2 text-sm text-neutral-500">{decodeURIComponent(errorMessage)}</p>
+        )}
+        {/* Tesler's Law: some complexity can't be removed — a broken token
+            genuinely can't be resolved in the browser. What can be removed is
+            the visitor's share of it, so the fallback is a one-click email
+            with the subject pre-filled rather than "contact support". */}
+        <p className="mt-6 text-sm text-neutral-400">
+          Email me and I&apos;ll remove you manually — no reply needed from you beyond that.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <a href={mailto("Please unsubscribe me")} className={buttonVariants()}>
+            Email me to unsubscribe
+          </a>
+          <Link href="/" className={buttonVariants({ variant: "outline" })}>
+            Home
+          </Link>
         </div>
-      </div>
+      </Shell>
     );
   }
 
-  // Success state
   if (unsubscribed) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100">
-        <div className="mx-auto flex max-w-2xl flex-col items-center px-4 pb-24 pt-32 text-center">
-          <div className="glass-card rounded-3xl p-12 shadow-xl">
-            <div className="text-6xl mb-6">✅</div>
-            <h1 className="text-3xl font-semibold text-slate-100 mb-4">Successfully Unsubscribed</h1>
-            <p className="text-slate-300 mb-6">
-              You&apos;ve been unsubscribed from the {type === 'community' ? 'community waitlist' : 'blog newsletter'}. 
-              We&apos;re sorry to see you go!
-            </p>
-            <div className="glass-card rounded-2xl p-6 mb-6 bg-slate-800/50">
-              <p className="text-slate-300 text-sm">
-                Changed your mind? You can always subscribe again from the{' '}
-                <Link href={type === 'community' ? '/community' : '/blog'} className="text-blue-400 hover:text-blue-300">
-                  {type === 'community' ? 'community page' : 'blog page'}
-                </Link>.
-              </p>
-            </div>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link
-                href={type === 'community' ? '/community' : '/blog'}
-                className="glass-card glass-hover inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-slate-100 transition-all duration-300 hover:-translate-y-0.5"
-              >
-                {type === 'community' ? 'Community' : 'Blog'}
-              </Link>
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 rounded-full border border-slate-500/30 px-6 py-3 text-sm font-semibold text-slate-100 transition-all duration-300 hover:border-slate-400 hover:bg-slate-700/20"
-              >
-                Home
-              </Link>
-            </div>
-          </div>
+      <Shell title="Unsubscribed">
+        <p className="mt-4 text-neutral-300">
+          You&apos;ve been removed from the {listName}. No further emails will be sent.
+        </p>
+        <p className="mt-4 text-sm text-neutral-400">
+          Changed your mind? You can resubscribe any time from the{" "}
+          <Link
+            href={returnPath}
+            className="font-medium text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
+          >
+            {returnLabel}
+          </Link>
+          .
+        </p>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link href={returnPath} className={buttonVariants({ variant: "secondary" })}>
+            Back to the {returnLabel}
+          </Link>
+          <Link href="/" className={buttonVariants({ variant: "outline" })}>
+            Home
+          </Link>
         </div>
-      </div>
+      </Shell>
     );
   }
 
-  // Confirmation state
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto flex max-w-2xl flex-col items-center px-4 pb-24 pt-32 text-center">
-        <div className="glass-card rounded-3xl p-12 shadow-xl">
-          <div className="text-6xl mb-6">😢</div>
-          <h1 className="text-3xl font-semibold text-slate-100 mb-4">Confirm Unsubscribe</h1>
-          <p className="text-slate-300 mb-2">
-            Are you sure you want to unsubscribe <strong>{email && decodeURIComponent(email)}</strong> from the{' '}
-            <strong>{type === 'community' ? 'community waitlist' : 'blog newsletter'}</strong>?
-          </p>
-          <p className="text-slate-400 text-sm mb-8">
-            You&apos;ll no longer receive {type === 'community' 
-              ? 'community updates, early access to workshops, or hackathon invites' 
-              : 'monthly engineering insights and deep dives'}.
-          </p>
-          
-          {error && (
-            <div className="glass-card rounded-xl p-4 border-red-500/30 bg-red-500/10 mb-6">
-              <div className="flex items-center gap-2">
-                <span className="text-red-400">✗</span>
-                <p className="text-sm text-red-300 font-medium">{error}</p>
-              </div>
-            </div>
+    <Shell title="Confirm unsubscribe">
+      <p className="mt-4 text-neutral-300">
+        Remove{" "}
+        <strong className="font-semibold text-white">
+          {email ? decodeURIComponent(email) : "your address"}
+        </strong>{" "}
+        from the {listName}?
+      </p>
+      <p className="mt-3 text-sm text-neutral-400">
+        You&apos;ll stop receiving{" "}
+        {type === "community"
+          ? "community updates, early workshop access, and hackathon invites"
+          : "the monthly engineering digest and deep dives"}
+        .
+      </p>
+
+      {error && (
+        <p
+          role="alert"
+          className="mt-6 flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200"
+        >
+          <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+          {error}
+        </p>
+      )}
+
+      {!token && (
+        <p
+          role="alert"
+          className="mt-6 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200"
+        >
+          <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+          This link is missing its confirmation token, so the button below is disabled. Use the
+          unsubscribe link from the original email, or{" "}
+          <a href={mailto("Please unsubscribe me")} className="underline underline-offset-4">
+            email me
+          </a>
+          .
+        </p>
+      )}
+
+      <div className="mt-8 flex flex-wrap gap-3">
+        {/* Destructive action, styled as such. The previous red pill was the
+            single most prominent element on the page; here "keep it" is given
+            equal weight so the choice isn't nudged either way. */}
+        <button
+          type="button"
+          onClick={handleUnsubscribe}
+          disabled={loading || !token}
+          className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-red-500/40 bg-red-500/15 px-5 text-sm font-semibold text-red-200 transition-colors hover:bg-red-500/25 disabled:pointer-events-none disabled:opacity-50"
+        >
+          {loading ? (
+            <>
+              <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+              Unsubscribing…
+            </>
+          ) : (
+            "Yes, unsubscribe"
           )}
-          
-          <div className="flex flex-wrap justify-center gap-4">
-            <button
-              onClick={handleUnsubscribe}
-              disabled={loading || !token}
-              className="bg-red-500 hover:bg-red-600 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50"
-            >
-              {loading ? 'Processing...' : 'Yes, Unsubscribe'}
-            </button>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 rounded-full border border-slate-500/30 px-6 py-3 text-sm font-semibold text-slate-100 transition-all duration-300 hover:border-slate-400 hover:bg-slate-700/20"
-            >
-              Keep Subscription
-            </Link>
-          </div>
-        </div>
+        </button>
+        <Link href="/" className={buttonVariants({ variant: "secondary" })}>
+          Keep my subscription
+        </Link>
       </div>
-    </div>
+    </Shell>
   );
 }
 
 export default function UnsubscribePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-slate-950 text-slate-100">
-        <div className="mx-auto flex max-w-2xl flex-col items-center px-4 pb-24 pt-32 text-center">
-          <div className="glass-card rounded-3xl p-12 shadow-xl">
-            <div className="text-6xl mb-6">⏳</div>
-            <h1 className="text-3xl font-semibold text-slate-100 mb-4">Loading...</h1>
-          </div>
-        </div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <Shell title="Loading…">
+          <p className="mt-4 text-sm text-neutral-400">Checking your unsubscribe link.</p>
+        </Shell>
+      }
+    >
       <UnsubscribeContent />
     </Suspense>
   );

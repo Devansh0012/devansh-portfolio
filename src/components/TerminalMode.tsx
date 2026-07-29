@@ -22,6 +22,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { SITE } from "@/lib/site";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 import {
   demos,
   education,
@@ -284,6 +286,7 @@ export default function TerminalMode() {
   const [visitorInfo, setVisitorInfo] = useState<VisitorInfo | null>(null);
   const [networkState, setNetworkState] = useState<"resolving" | "online" | "limited">("resolving");
   const [startedAt] = useState(() => Date.now());
+  const prefersReducedMotion = useReducedMotion();
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
   const nextId = useRef(0);
@@ -297,11 +300,15 @@ export default function TerminalMode() {
   }, []);
 
   useEffect(() => {
+    // A real shell shows output instantly. Smooth-scrolling to the newest entry
+    // adds a few hundred milliseconds of travel between typing a command and
+    // being able to read its result (Doherty Threshold), and it's animation a
+    // reduced-motion user has explicitly opted out of.
     terminalRef.current?.scrollTo({
       top: terminalRef.current.scrollHeight,
-      behavior: "smooth",
+      behavior: prefersReducedMotion ? "auto" : "smooth",
     });
-  }, [entries, activeGame]);
+  }, [entries, activeGame, prefersReducedMotion]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -664,15 +671,15 @@ export default function TerminalMode() {
       case "contact":
         output = (
           <div className="space-y-2">
-            <p><span className="inline-block w-24 text-neutral-500">Email</span><TerminalLink href="mailto:devanshdubey0012@gmail.com">devanshdubey0012@gmail.com</TerminalLink></p>
-            <p><span className="inline-block w-24 text-neutral-500">GitHub</span><TerminalLink href="https://github.com/Devansh0012">@Devansh0012</TerminalLink></p>
-            <p><span className="inline-block w-24 text-neutral-500">LinkedIn</span><TerminalLink href="https://www.linkedin.com/in/devanshdubey1/">devanshdubey1</TerminalLink></p>
+            <p><span className="inline-block w-24 text-neutral-500">Email</span><TerminalLink href={`mailto:${SITE.email}`}>{SITE.email}</TerminalLink></p>
+            <p><span className="inline-block w-24 text-neutral-500">GitHub</span><TerminalLink href={SITE.github}>{SITE.githubHandle}</TerminalLink></p>
+            <p><span className="inline-block w-24 text-neutral-500">LinkedIn</span><TerminalLink href={SITE.linkedin}>{SITE.linkedinHandle}</TerminalLink></p>
           </div>
         );
         break;
 
       case "resume":
-        output = <p><TerminalLink href="https://drive.google.com/file/d/1aVRmVG6UTHH9mZdqqRURRYZ4F0LLBrrW/view?usp=sharing">open public resume ↗</TerminalLink></p>;
+        output = <p><TerminalLink href={SITE.resumeUrl}>open public resume ↗</TerminalLink></p>;
         break;
 
       case "open": {
@@ -682,7 +689,7 @@ export default function TerminalMode() {
         const demo = demos.find((item) => item.id === demoId || item.title.toLowerCase().includes(demoId));
         if (!target) output = <p className="text-red-300">open: missing target. Try `open blog`, `open resume`, or `open demo:rate-limiter`.</p>;
         else if (target === "blog") output = <TerminalLink href="/blog">resolved → /blog ↗</TerminalLink>;
-        else if (target === "resume") output = <TerminalLink href="https://drive.google.com/file/d/1aVRmVG6UTHH9mZdqqRURRYZ4F0LLBrrW/view?usp=sharing">resolved → resume ↗</TerminalLink>;
+        else if (target === "resume") output = <TerminalLink href={SITE.resumeUrl}>resolved → resume ↗</TerminalLink>;
         else if (demo) output = <TerminalLink href={demo.path}>resolved → {demo.title} ↗</TerminalLink>;
         else if (project) output = <TerminalLink href={project.link}>resolved → {project.title} ↗</TerminalLink>;
         else output = <p className="text-amber-300">open: could not resolve “{argument}”.</p>;

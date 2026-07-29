@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Pause, Play, RotateCcw, Pencil, Type, FileImage, Image as ImageIcon, Cpu, Code2 } from "lucide-react";
+import { Pause, Play, RotateCcw, Pencil, Type, FileImage, Image as ImageIcon, Cpu, Code2 } from "lucide-react";
+import { DemoHeader } from "@/components/demos/DemoHeader";
 import DrawPad from "./components/DrawPad";
 import TextInput from "./components/TextInput";
 import SvgUpload from "./components/SvgUpload";
@@ -109,26 +109,10 @@ export default function FourierVisualizer() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="border-b border-white/10 bg-white/5 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/demos"
-              className="text-neutral-400 hover:text-white transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-white">
-                Fourier Series Visualizer
-              </h1>
-              <p className="text-sm text-neutral-400">
-                Decompose any shape into rotating epicycles
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <DemoHeader
+        title="Fourier Series Visualizer"
+        description="Decompose any shape into rotating epicycles"
+      />
 
       <div className="mx-auto max-w-7xl px-4 py-6 grid lg:grid-cols-[360px_1fr] gap-6">
         <aside className="space-y-4">
@@ -164,33 +148,35 @@ export default function FourierVisualizer() {
           <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-4">
             <div>
               <div className="flex justify-between text-xs text-neutral-400 mb-1">
-                <span>Epicycles</span>
+                <label htmlFor="fourier-epicycles">Epicycles</label>
                 <span className="text-white tabular-nums">{numEpicycles}</span>
               </div>
               <input
+                id="fourier-epicycles"
                 type="range"
                 min={1}
                 max={Math.max(1, coefficients.length || 200)}
                 value={numEpicycles}
                 onChange={(e) => setNumEpicycles(Number(e.target.value))}
-                className="w-full accent-cyan-400"
+                className="w-full py-2 accent-cyan-400"
               />
             </div>
             <div>
               <div className="flex justify-between text-xs text-neutral-400 mb-1">
-                <span>Speed</span>
+                <label htmlFor="fourier-speed">Speed</label>
                 <span className="text-white tabular-nums">
                   {speed.toFixed(2)}×
                 </span>
               </div>
               <input
+                id="fourier-speed"
                 type="range"
                 min={0.05}
                 max={1.5}
                 step={0.05}
                 value={speed}
                 onChange={(e) => setSpeed(Number(e.target.value))}
-                className="w-full accent-cyan-400"
+                className="w-full py-2 accent-cyan-400"
               />
             </div>
             <div className="flex gap-2">

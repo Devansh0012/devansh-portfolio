@@ -74,7 +74,22 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
         remarkPlugins: [remarkGfm],
         rehypePlugins: [
           rehypeSlug,
-          [rehypeAutolinkHeadings, { properties: { className: ["anchor-link"] } }],
+          [
+            rehypeAutolinkHeadings,
+            {
+              // Appended, visible, and labelled. The default configuration
+              // prepends an *empty* anchor, which reaches assistive tech as an
+              // unnamed link before every heading — a link a screen-reader user
+              // is offered but can't identify. A "#" with an accessible name
+              // makes it a usable "link to this section" affordance instead.
+              behavior: "append",
+              content: { type: "text", value: "#" },
+              properties: {
+                className: ["anchor-link"],
+                ariaLabel: "Link to this section",
+              },
+            },
+          ],
         ],
       },
     },

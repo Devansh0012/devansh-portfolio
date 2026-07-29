@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { ArrowLeft, Play, RotateCcw, Zap } from "lucide-react";
+import { Play, RotateCcw, Zap } from "lucide-react";
+import { DemoHeader } from "@/components/demos/DemoHeader";
 
 type Algorithm = "bubble" | "quick" | "merge";
 
@@ -175,29 +175,16 @@ export default function SortingVisualizer() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="border-b border-white/10 bg-white/5 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/engineer"
-              className="text-neutral-400 hover:text-white transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div>
-              <h1 className="text-xl font-bold text-white">Sorting Algorithm Visualizer</h1>
-              <p className="text-sm text-neutral-400">
-                Watch sorting algorithms in action
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-neutral-500">Algorithm</span>
-            <Zap className="h-4 w-4 text-cyan-400" />
-          </div>
-        </div>
-      </div>
+      <DemoHeader
+        title="Sorting Algorithm Visualizer"
+        description="Watch sorting algorithms in action"
+        actions={
+          <span className="inline-flex items-center gap-2 text-xs text-neutral-500">
+            <Zap aria-hidden="true" className="h-4 w-4 text-cyan-400" />
+            Choose an algorithm below
+          </span>
+        }
+      />
 
       {/* Controls */}
       <div className="border-b border-white/10 bg-white/5">
@@ -269,7 +256,7 @@ export default function SortingVisualizer() {
         {/* Info */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-            <h3 className="font-semibold text-white mb-2">Bubble Sort</h3>
+            <h2 className="font-semibold text-white mb-2">Bubble Sort</h2>
             <p className="text-sm text-neutral-400">
               Time: O(n²) • Space: O(1)
             </p>
@@ -278,7 +265,7 @@ export default function SortingVisualizer() {
             </p>
           </div>
           <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-            <h3 className="font-semibold text-white mb-2">Quick Sort</h3>
+            <h2 className="font-semibold text-white mb-2">Quick Sort</h2>
             <p className="text-sm text-neutral-400">
               Time: O(n log n) • Space: O(log n)
             </p>
@@ -287,7 +274,7 @@ export default function SortingVisualizer() {
             </p>
           </div>
           <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-            <h3 className="font-semibold text-white mb-2">Merge Sort</h3>
+            <h2 className="font-semibold text-white mb-2">Merge Sort</h2>
             <p className="text-sm text-neutral-400">
               Time: O(n log n) • Space: O(n)
             </p>

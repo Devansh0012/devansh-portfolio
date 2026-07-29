@@ -3,35 +3,110 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ---------------------------------------------------------------------------
+   Design tokens
+   One source of truth for surface, text, border, motion, and focus values so
+   every page reads as the same system (Law of Similarity / Uniform
+   Connectedness). Components should reference these instead of inventing
+   one-off slate/cyan values.
+--------------------------------------------------------------------------- */
 :root {
   color-scheme: dark;
+
+  /* Monochromatic black theme */
+  --background-primary: #000000;
+  --background-secondary: #0a0a0a;
+  --background-tertiary: #111111;
+
+  --surface-glass: rgba(10, 10, 10, 0.6);
+  --surface-card: rgba(20, 20, 20, 0.4);
+  --surface-hover: rgba(30, 30, 30, 0.6);
+
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.24);
+
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1a1;
+  --text-tertiary: #737373;
+  --text-muted: #525252;
+
+  --accent-primary: #ffffff;
+  --accent-secondary: #d4d4d4;
+
+  /* Engineer-surface accent (terminal, demos). Kept in one place so the
+     "technical" areas of the site stay internally consistent. */
+  --accent-technical: #22d3ee;
+
+  /* Motion scale. Doherty Threshold: interface feedback should land well
+     under 400ms, so nothing an interaction depends on runs longer than 300ms. */
+  --motion-instant: 90ms;
+  --motion-fast: 160ms;
+  --motion-base: 240ms;
+  --motion-slow: 400ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Focus ring: must be clearly visible against a black background. */
+  --focus-ring: rgba(255, 255, 255, 0.9);
+
+  /* Sticky offset, so anchored headings never hide under the navbar. */
+  --nav-height: 4rem;
+
+  --radius: 0.625rem;
+}
+
+/* shadcn token surface. Defined dark-first so a missing `.dark` class can never
+   flash a white page (the previous :root values were the light palette). */
+:root,
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+html {
+  /* Only smooth-scroll for users who haven't asked for reduced motion; the
+     media query below turns this off again. */
   scroll-behavior: smooth;
-
-  /* Monochromatic Black Theme */
-  --background-primary: #000000; /* pure black */
-  --background-secondary: #0a0a0a; /* near black */
-  --background-tertiary: #111111; /* dark gray */
-
-  --surface-glass: rgba(10, 10, 10, 0.6); /* dark with opacity */
-  --surface-card: rgba(20, 20, 20, 0.4); /* subtle dark */
-  --surface-hover: rgba(30, 30, 30, 0.6); /* hover dark */
-
-  --border-glass: rgba(255, 255, 255, 0.08); /* subtle white border */
-  --border-subtle: rgba(255, 255, 255, 0.12); /* more visible border */
-
-  --text-primary: #ffffff; /* pure white */
-  --text-secondary: #a1a1a1; /* gray */
-  --text-tertiary: #737373; /* mid gray */
-  --text-muted: #525252; /* dark gray */
-
-  --accent-primary: #ffffff; /* white accent */
-  --accent-secondary: #d4d4d4; /* light gray accent */
-  --accent-emerald: #a3a3a3; /* gray accent */ --radius: 0.625rem; --background: oklch(1 0 0); --foreground: oklch(0.145 0 0); --card: oklch(1 0 0); --card-foreground: oklch(0.145 0 0); --popover: oklch(1 0 0); --popover-foreground: oklch(0.145 0 0); --primary: oklch(0.205 0 0); --primary-foreground: oklch(0.985 0 0); --secondary: oklch(0.97 0 0); --secondary-foreground: oklch(0.205 0 0); --muted: oklch(0.97 0 0); --muted-foreground: oklch(0.556 0 0); --accent: oklch(0.97 0 0); --accent-foreground: oklch(0.205 0 0); --destructive: oklch(0.577 0.245 27.325); --border: oklch(0.922 0 0); --input: oklch(0.922 0 0); --ring: oklch(0.708 0 0); --chart-1: oklch(0.646 0.222 41.116); --chart-2: oklch(0.6 0.118 184.704); --chart-3: oklch(0.398 0.07 227.392); --chart-4: oklch(0.828 0.189 84.429); --chart-5: oklch(0.769 0.188 70.08); --sidebar: oklch(0.985 0 0); --sidebar-foreground: oklch(0.145 0 0); --sidebar-primary: oklch(0.205 0 0); --sidebar-primary-foreground: oklch(0.985 0 0); --sidebar-accent: oklch(0.97 0 0); --sidebar-accent-foreground: oklch(0.205 0 0); --sidebar-border: oklch(0.922 0 0); --sidebar-ring: oklch(0.708 0 0);
+  scroll-padding-top: calc(var(--nav-height) + 1rem);
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   min-height: 100vh;
+  /* Decorative absolutely-positioned layers must never make the page pan
+     sideways on mobile. */
+  overflow-x: hidden;
 }
 
 a {
@@ -43,11 +118,118 @@ a {
   color: inherit;
 }
 
+/* ---------------------------------------------------------------------------
+   Focus visibility
+   A keyboard user must always be able to see where they are. The previous
+   ring (white/20) was effectively invisible on black.
+--------------------------------------------------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------------------
+   Skip link (Jakob's Law: keyboard users expect this as the first tab stop)
+--------------------------------------------------------------------------- */
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 200;
+  transform: translateY(-150%);
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #000000;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline-offset: 3px;
+}
+
+/* ---------------------------------------------------------------------------
+   Transitions
+   Scoped to elements that actually respond to input. The previous rule applied
+   a transition to *every* element on the page, which forced needless style
+   recalculation and made animated regions (canvas overlays, star fields) jitter.
+--------------------------------------------------------------------------- */
+a,
+button,
+summary,
+input,
+select,
+textarea,
+[role="button"],
+[role="tab"],
+[data-interactive] {
+  transition:
+    color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out),
+    opacity var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-base) var(--ease-out),
+    transform var(--motion-base) var(--ease-out);
+}
+
+/* ---------------------------------------------------------------------------
+   Typography helpers
+--------------------------------------------------------------------------- */
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p,
+li {
+  text-wrap: pretty;
+}
+
 .text-glow {
   text-shadow: 0 0 30px rgba(255, 255, 255, 0.3), 0 0 60px rgba(255, 255, 255, 0.15);
 }
 
-/* Glass morphism utilities */
+/* Comfortable measure for long-form reading (~65-75 characters). */
+.measure {
+  max-width: 68ch;
+}
+
+/* Section label above a heading. Consistent across pages so users learn it. */
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------------------
+   Hit targets (Fitts's Law)
+   Anything tappable should be at least 44x44 CSS px on touch devices.
+--------------------------------------------------------------------------- */
+/* Sizing only — deliberately no `display`. Tailwind's utilities live in
+   `@layer utilities`, and unlayered rules beat layered ones in the cascade, so
+   setting `display` here would silently defeat `md:hidden` and friends on any
+   element that also uses this class. Callers bring their own display utility. */
+.tap-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@media (pointer: coarse) {
+  [data-nav] {
+    min-height: 44px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Surfaces (Law of Common Region — a bounded area reads as one group)
+--------------------------------------------------------------------------- */
 .glass {
   background: var(--surface-glass);
   -webkit-backdrop-filter: blur(16px);
@@ -67,20 +249,79 @@ a {
   border-color: var(--border-glass);
 }
 
-/* Gradient overlays for visual interest */
-.gradient-overlay {
-  background: linear-gradient(135deg, 
-    rgba(59, 130, 246, 0.1) 0%, 
-    rgba(139, 92, 246, 0.05) 25%, 
-    transparent 50%,
-    rgba(16, 185, 129, 0.05) 75%,
-    rgba(59, 130, 246, 0.1) 100%
-  );
+/* Reading-progress bar (Goal-Gradient Effect) */
+.reading-progress {
+  transform-origin: 0 50%;
+  transition: transform var(--motion-instant) linear;
 }
 
-/* Smooth transitions for all interactive elements */
-* {
-  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+/* ---------------------------------------------------------------------------
+   Heading anchor links in articles
+   Present but quiet: revealed on hover of the heading, and always visible on
+   keyboard focus so it can't become a mouse-only feature.
+--------------------------------------------------------------------------- */
+.anchor-link {
+  /* Padded out to a usable target: a bare "#" glyph is about 10x26px, well
+     under the ~32px minimum, and it's the kind of control people aim at
+     imprecisely (Fitts's Law). */
+  display: inline-block;
+  min-width: 32px;
+  padding: 0 0.5rem;
+  margin-left: 0.25ch;
+  text-align: center;
+  color: var(--text-muted);
+  opacity: 0;
+  text-decoration: none;
+  transition: opacity var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out);
+}
+
+h1:hover > .anchor-link,
+h2:hover > .anchor-link,
+h3:hover > .anchor-link,
+h4:hover > .anchor-link,
+.anchor-link:focus-visible {
+  opacity: 1;
+}
+
+.anchor-link:hover {
+  color: var(--text-primary);
+}
+
+@media (pointer: coarse) {
+  /* No hover on touch, so the affordance would otherwise be unreachable. */
+  .anchor-link {
+    opacity: 0.4;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion
+   Everything decorative stops; nothing functional disappears. Covers the
+   border beams, gravity stars, canvas reveals, and Framer Motion transitions.
+--------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Purely decorative motion layers are removed outright rather than run
+     instantly, so they don't leave a static artifact behind. */
+  [data-decorative-motion] {
+    display: none !important;
+  }
+
+  .text-glow {
+    text-shadow: none;
+  }
 }
 
 @theme inline {
@@ -119,52 +360,13 @@ a {
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --animate-border-beam: border-beam calc(var(--duration)*1s) infinite linear;
+  --animate-border-beam: border-beam calc(var(--duration) * 1s) infinite linear;
 
   @keyframes border-beam {
     100% {
       offset-distance: 100%;
     }
   }
-  @keyframes border-beam {
-  100% {
-    offset-distance: 100%;
-    }
-  }
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
 }
 
 @layer base {

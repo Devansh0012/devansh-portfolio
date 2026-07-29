@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import { ArrowLeft, Send, RotateCcw, Settings } from "lucide-react";
+import { Send, RotateCcw, Settings } from "lucide-react";
+import { DemoHeader } from "@/components/demos/DemoHeader";
 
 type Algorithm = "token-bucket" | "leaky-bucket" | "fixed-window";
 
@@ -156,30 +156,16 @@ export default function RateLimiterSimulator() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="border-b border-white/10 bg-white/5 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/engineer"
-              className="text-neutral-400 hover:text-white transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div>
-              <h1 className="text-xl font-bold text-white">
-                Rate Limiter Simulator
-              </h1>
-              <p className="text-sm text-neutral-400">
-                Visualize rate limiting algorithms
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Settings className="h-4 w-4 text-cyan-400" />
-          </div>
-        </div>
-      </div>
+      <DemoHeader
+        title="Rate Limiter Simulator"
+        description="Visualize rate limiting algorithms"
+        actions={
+          <span className="inline-flex items-center gap-2 text-xs text-neutral-500">
+            <Settings aria-hidden="true" className="h-4 w-4 text-cyan-400" />
+            Tune the settings below
+          </span>
+        }
+      />
 
       {/* Controls */}
       <div className="border-b border-white/10 bg-white/5">
@@ -240,30 +226,39 @@ export default function RateLimiterSimulator() {
 
           {/* Settings */}
           <div className="flex flex-wrap items-center gap-4 mt-4">
+            {/* htmlFor/id pairs these up. Sitting next to an input is enough
+                for a sighted user (Law of Proximity) but carries no meaning to
+                assistive tech, and it's what makes the label click-to-focus. */}
             <div className="flex items-center gap-2">
-              <label className="text-sm text-neutral-400">Max Capacity:</label>
+              <label htmlFor="rl-max-capacity" className="text-sm text-neutral-400">
+                Max Capacity:
+              </label>
               <input
+                id="rl-max-capacity"
                 type="number"
+                min={1}
                 value={maxTokens}
                 onChange={(e) => {
                   const val = parseInt(e.target.value);
                   if (val > 0) setMaxTokens(val);
                 }}
-                className="w-20 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm"
+                className="w-24 min-h-[40px] px-3 py-1 bg-white/10 border border-white/20 rounded text-white text-sm"
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-sm text-neutral-400">
+              <label htmlFor="rl-rate" className="text-sm text-neutral-400">
                 Rate (req/sec):
               </label>
               <input
+                id="rl-rate"
                 type="number"
+                min={1}
                 value={refillRate}
                 onChange={(e) => {
                   const val = parseInt(e.target.value);
                   if (val > 0) setRefillRate(val);
                 }}
-                className="w-20 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm"
+                className="w-24 min-h-[40px] px-3 py-1 bg-white/10 border border-white/20 rounded text-white text-sm"
               />
             </div>
           </div>
@@ -276,7 +271,7 @@ export default function RateLimiterSimulator() {
           {/* State Visualization */}
           <div className="lg:col-span-1">
             <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-              <h3 className="font-semibold text-white mb-4">Current State</h3>
+              <h2 className="font-semibold text-white mb-4">Current State</h2>
 
               {algorithm === "token-bucket" && (
                 <div className="space-y-4">
@@ -376,7 +371,7 @@ export default function RateLimiterSimulator() {
           {/* Request Log */}
           <div className="lg:col-span-2">
             <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-              <h3 className="font-semibold text-white mb-4">Request Log</h3>
+              <h2 className="font-semibold text-white mb-4">Request Log</h2>
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {requests.length === 0 ? (
                   <p className="text-neutral-500 text-sm text-center py-8">
@@ -420,7 +415,7 @@ export default function RateLimiterSimulator() {
         {/* Info Cards */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-            <h3 className="font-semibold text-white mb-2">Token Bucket</h3>
+            <h2 className="font-semibold text-white mb-2">Token Bucket</h2>
             <p className="text-sm text-neutral-400 mb-2">
               Tokens refill continuously
             </p>
@@ -429,7 +424,7 @@ export default function RateLimiterSimulator() {
             </p>
           </div>
           <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-            <h3 className="font-semibold text-white mb-2">Leaky Bucket</h3>
+            <h2 className="font-semibold text-white mb-2">Leaky Bucket</h2>
             <p className="text-sm text-neutral-400 mb-2">
               Processes at fixed rate
             </p>
@@ -438,7 +433,7 @@ export default function RateLimiterSimulator() {
             </p>
           </div>
           <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-            <h3 className="font-semibold text-white mb-2">Fixed Window</h3>
+            <h2 className="font-semibold text-white mb-2">Fixed Window</h2>
             <p className="text-sm text-neutral-400 mb-2">
               Counter per time window
             </p>

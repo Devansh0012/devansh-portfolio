@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
+import { DemoHeader } from "@/components/demos/DemoHeader";
 
 class TreeNode {
   value: number;
@@ -238,39 +238,28 @@ export default function BSTVisualizer() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="border-b border-white/10 bg-white/5 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/engineer"
-              className="text-neutral-400 hover:text-white transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div>
-              <h1 className="text-xl font-bold text-white">
-                Binary Search Tree Visualizer
-              </h1>
-              <p className="text-sm text-neutral-400">
-                Interactive BST operations and traversals
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <DemoHeader
+        title="Binary Search Tree Visualizer"
+        description="Interactive BST operations and traversals"
+      />
 
       {/* Controls */}
       <div className="border-b border-white/10 bg-white/5">
         <div className="mx-auto max-w-7xl px-4 py-4">
           <div className="flex flex-wrap items-center gap-4">
+            {/* A placeholder is not a label: it disappears the moment someone
+                types, and screen readers may not announce it at all. */}
+            <label htmlFor="bst-value" className="sr-only">
+              Node value to insert (0–999)
+            </label>
             <input
+              id="bst-value"
               type="number"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleInsert()}
               placeholder="Enter value (0-999)"
-              className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="min-h-[44px] px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
             <button
               onClick={handleInsert}
@@ -355,21 +344,21 @@ export default function BSTVisualizer() {
         {/* Info */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-            <h3 className="font-semibold text-white mb-2">In-Order</h3>
+            <h2 className="font-semibold text-white mb-2">In-Order</h2>
             <p className="text-sm text-neutral-400">Left → Root → Right</p>
             <p className="text-xs text-neutral-500 mt-2">
               Returns nodes in sorted order
             </p>
           </div>
           <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-            <h3 className="font-semibold text-white mb-2">Pre-Order</h3>
+            <h2 className="font-semibold text-white mb-2">Pre-Order</h2>
             <p className="text-sm text-neutral-400">Root → Left → Right</p>
             <p className="text-xs text-neutral-500 mt-2">
               Used to copy the tree
             </p>
           </div>
           <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-            <h3 className="font-semibold text-white mb-2">Post-Order</h3>
+            <h2 className="font-semibold text-white mb-2">Post-Order</h2>
             <p className="text-sm text-neutral-400">Left → Right → Root</p>
             <p className="text-xs text-neutral-500 mt-2">
               Used to delete the tree

@@ -2,8 +2,8 @@
 
 import { useCallback, useState } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
-import { ArrowLeft, Pause, Play, RotateCcw, Grid3x3, Spline, Orbit, Cpu, Code2 } from "lucide-react";
+import { Pause, Play, RotateCcw, Grid3x3, Spline, Orbit, Cpu, Code2 } from "lucide-react";
+import { DemoHeader } from "@/components/demos/DemoHeader";
 import type { SpiralStyle } from "@/lib/ulam/spiral";
 import type { TimingInfo } from "./components/UlamScene";
 import type { ComputeBackend } from "@/lib/wasm/loader";
@@ -62,26 +62,10 @@ export default function UlamSpiralPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="border-b border-white/10 bg-white/5 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/demos"
-              className="text-neutral-400 hover:text-white transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-white">
-                3D Ulam Spiral
-              </h1>
-              <p className="text-sm text-neutral-400">
-                Watch primes arrange themselves in 3D
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <DemoHeader
+        title="3D Ulam Spiral"
+        description="Watch primes arrange themselves in 3D"
+      />
 
       <div className="mx-auto max-w-7xl px-4 py-6 grid lg:grid-cols-[340px_1fr] gap-6">
         <aside className="space-y-4">
@@ -117,10 +101,11 @@ export default function UlamSpiralPage() {
           <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-4">
             <div>
               <div className="flex justify-between text-xs text-neutral-400 mb-1">
-                <span>Numbers (N)</span>
+                <label htmlFor="ulam-count">Numbers (N)</label>
                 <span className="text-white tabular-nums">{count.toLocaleString()}</span>
               </div>
               <input
+                id="ulam-count"
                 type="range"
                 min={100}
                 max={10000}
@@ -130,22 +115,23 @@ export default function UlamSpiralPage() {
                   setCount(Number(e.target.value));
                   setReplaySignal((n) => n + 1);
                 }}
-                className="w-full accent-cyan-400"
+                className="w-full py-2 accent-cyan-400"
               />
             </div>
             <div>
               <div className="flex justify-between text-xs text-neutral-400 mb-1">
-                <span>Build speed</span>
+                <label htmlFor="ulam-speed">Build speed</label>
                 <span className="text-white tabular-nums">{speed.toFixed(2)}×</span>
               </div>
               <input
+                id="ulam-speed"
                 type="range"
                 min={0.1}
                 max={2}
                 step={0.05}
                 value={speed}
                 onChange={(e) => setSpeed(Number(e.target.value))}
-                className="w-full accent-cyan-400"
+                className="w-full py-2 accent-cyan-400"
               />
             </div>
             <div className="flex gap-2">

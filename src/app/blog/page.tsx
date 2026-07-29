@@ -5,7 +5,7 @@ import SubscriptionForm from "@/components/SubscriptionForm";
 import { CardSpotlight } from "@/components/ui/card-spotlight";
 import { BorderBeam } from "@/components/ui/border-beam";
 import BlogContent from "@/components/blog/BlogContent";
-import { GravityStarsBackground } from "@/components/animate-ui/components/backgrounds/gravity-stars";
+import { SiteBackground } from "@/components/SiteBackground";
 import { Rss } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -29,8 +29,8 @@ export default async function BlogIndexPage({
   const resolvedSearchParams = await searchParams;
 
   return (
-    <div className="relative min-h-screen bg-black text-white">
-      <GravityStarsBackground className="absolute inset-0 -z-10" starsCount={100} starsSize={2} />
+    <div className="relative bg-black text-white">
+      <SiteBackground />
       <section className="mx-auto max-w-6xl px-4 pb-16 pt-20 md:pt-24">
         <div className="space-y-8">
           <div className="space-y-4">
@@ -38,17 +38,16 @@ export default async function BlogIndexPage({
               Blog
             </p>
             <h1 className="text-glow text-4xl font-semibold md:text-5xl">Stories from the build log</h1>
-            <p className="max-w-2xl text-sm text-neutral-300">
+            <p className="measure text-base text-neutral-300">
               Deep dives from production incidents, design docs, hackathon sprints, and community workshops. Expect
               practical systems design takeaways and honest retrospectives.
             </p>
             <div className="flex flex-wrap gap-3 text-xs">
               <a
                 href="/rss.xml"
-                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 font-semibold text-neutral-300 transition hover:bg-white/10"
-                aria-label="Subscribe to RSS feed"
+                className="inline-flex min-h-[40px] items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 font-semibold text-neutral-300 hover:border-white/40 hover:bg-white/10"
               >
-                <Rss className="h-4 w-4" />
+                <Rss aria-hidden="true" className="h-4 w-4" />
                 Subscribe via RSS
               </a>
             </div>
@@ -70,13 +69,8 @@ export default async function BlogIndexPage({
               <p className="mt-3 text-sm text-neutral-300">
                 Monthly digest with engineering deep dives, incident retrospectives, and community events. Zero spam, ever.
               </p>
-              <div className="mt-6 max-w-md mx-auto">
-                <SubscriptionForm
-                  type="blog"
-                  placeholder="you@amazingteam.com"
-                  buttonText="Subscribe"
-                  className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
-                />
+              <div className="mx-auto mt-6 max-w-md text-left">
+                <SubscriptionForm type="blog" buttonText="Subscribe" />
               </div>
             </div>
           </CardSpotlight>

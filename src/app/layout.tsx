@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Navbar from "@/components/Navbar";
@@ -76,6 +76,15 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: "#000000",
+  colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
+  // Never block pinch-zoom — capping the scale locks out low-vision users.
+  maximumScale: 5,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -94,15 +103,20 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-black text-white antialiased`}
       >
-        <div className="relative min-h-screen">
-          <div className="flex min-h-screen flex-col">
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-            <SpeedInsights />
-            <Analytics />
-          </div>
+        {/* First tab stop: lets keyboard users jump the navbar (Jakob's Law —
+            this is the convention they already expect). */}
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
+        <div className="flex min-h-screen flex-col">
+          <Navbar />
+          <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
+            {children}
+          </main>
+          <Footer />
         </div>
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

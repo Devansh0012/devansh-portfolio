@@ -80,17 +80,18 @@ export default function ImageUpload({ onCommit }: Props) {
         </p>
       )}
       <div>
-        <label className="text-xs text-neutral-400 mb-1 flex justify-between">
+        <label htmlFor="fourier-threshold" className="text-xs text-neutral-400 mb-1 flex justify-between">
           <span>Threshold</span>
           <span className="text-neutral-500">{threshold}</span>
         </label>
         <input
+          id="fourier-threshold"
           type="range"
           min={20}
           max={235}
           value={threshold}
           onChange={(e) => onThresholdChange(Number(e.target.value))}
-          className="w-full accent-cyan-400"
+          className="w-full py-2 accent-cyan-400"
         />
       </div>
       {error && <p className="text-xs text-red-400">{error}</p>}
