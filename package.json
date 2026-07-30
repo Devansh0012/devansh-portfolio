@@ -10,6 +10,8 @@
     "build:wasm": "bash scripts/build-wasm.sh"
   },
   "dependencies": {
+    "@autonoma-ai/sdk": "^0.2.9",
+    "@autonoma-ai/server-web": "^0.2.9",
     "@react-email/render": "^1.3.2",
     "@react-three/fiber": "^9.4.0",
     "@supabase/supabase-js": "^2.74.0",
