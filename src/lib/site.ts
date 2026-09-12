@@ -13,8 +13,7 @@ export const SITE = {
   role: "Software Engineer at Palo Alto Networks",
   url: "https://www.devanshdubey.com",
   email: "devanshdubey0012@gmail.com",
-  resumeUrl:
-    "https://drive.google.com/file/d/1aVRmVG6UTHH9mZdqqRURRYZ4F0LLBrrW/view?usp=sharing",
+  resumeUrl: "/Devansh_Dubey_Resume.pdf",
   github: "https://github.com/Devansh0012",
   githubHandle: "@Devansh0012",
   linkedin: "https://www.linkedin.com/in/devanshdubey1/",

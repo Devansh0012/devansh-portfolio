@@ -99,20 +99,36 @@ export const education: Education[] = [
 
 export const experiences: Experience[] = [
   {
-    company: "Palo Alto Networks (Portkey AI)",
+    company: "Palo Alto Networks",
     role: "Software Engineer",
-    start: "Mar 2026",
+    start: "Jun 2026",
     end: "Present",
     location: "Bengaluru, India",
     summary:
-      "Joined Portkey AI to build its AI and MCP gateways, and now continue that work at Palo Alto Networks following the acquisition.",
+      "Continue building Portkey's AI and MCP gateway infrastructure following its acquisition by Palo Alto Networks.",
     achievements: [
-      "Build and maintain backend services for AI gateway and MCP infrastructure used by production applications.",
-      "Develop provider integrations across routing, authentication, configuration, and model lifecycle workflows.",
-      "Improve platform reliability through stronger OAuth flows, caching, observability, and protocol interoperability.",
-      "Collaborate across gateway, control-plane, and developer-experience surfaces to deliver secure AI infrastructure.",
+      "Extended MCP registry listing with database keyset pagination, replacing in-memory pagination with bounded query results.",
+      "Fixed OAuth issuer discovery and body-less HTTP response handling during MCP Streamable HTTP handshakes.",
+      "Added unit and end-to-end tests for unified MCP/LLM gateway routing and OAuth metadata discovery.",
+      "Implemented authorization and consent handling across gateway and control-plane services for enterprise MCP integrations.",
     ],
     tech: ["TypeScript", "Node.js", "MCP", "OAuth 2.1", "Redis", "Kubernetes", "AWS Bedrock"],
+    url: "https://portkey.ai",
+  },
+  {
+    company: "Portkey AI",
+    role: "SDE Backend",
+    start: "Mar 2026",
+    end: "Jun 2026",
+    location: "Bengaluru, India",
+    summary:
+      "Built backend services for AI and MCP gateways before transitioning to Palo Alto Networks following the acquisition.",
+    achievements: [
+      "Built Bedrock/Mantle and Claude-on-AWS integrations across gateway and control plane, including IAM authentication, streaming, files, and batch APIs.",
+      "Implemented prompt-cache cost accounting across Anthropic, Bedrock, Vertex AI, and Azure, including 5-minute/1-hour cache writes and a duplicate-token-counting fix.",
+      "Built authenticated MCP registry endpoints and gateway proxying for enterprise tool discovery.",
+    ],
+    tech: ["TypeScript", "Node.js", "MCP", "OAuth", "AWS Bedrock"],
     url: "https://portkey.ai",
   },
   {
@@ -148,6 +164,15 @@ export const experiences: Experience[] = [
 ];
 
 export const projects: Project[] = [
+  {
+    title: "Braventex — Student Community Platform",
+    description:
+      "Built a full-stack student platform with college-email verification, communities, personalized feeds, study resources, and real-time direct messaging.",
+    tech: ["TypeScript", "Next.js", "Fastify", "GraphQL", "PostgreSQL", "Prisma", "WebSockets"],
+    link: "https://braventex.in",
+    highlight:
+      "Implemented refresh-token rotation with multi-tab race handling, feed ranking using social and engagement signals, and API integration tests for authentication, messaging, and moderation.",
+  },
   {
     title: "MCP Gateway Infrastructure",
     description:
@@ -226,7 +251,7 @@ export const projects: Project[] = [
   {
     title: "SDG Education Platform",
     description:
-      "Built interactive games for personalized learning, selected among top 0.1% globally.",
+      "Built interactive games and educational content for a NASA Space Apps Challenge 2024 Global Nominee project.",
     tech: ["React.js", "Django", "Tailwind"],
     link: "https://nasa-space-challenge24.vercel.app",
   },
